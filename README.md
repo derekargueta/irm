@@ -30,7 +30,7 @@ Questions to answer
 `analyze` is a command-line tool that accepts a domain as input, and runs a protocol inspection against it.
 It is the basic building block for this internet measurement research.
 
-Run the Go as a "Go script":
+Run the analyze tool as a "Go script":
 ```
 $ go run ./cmd/analyze news.ycombinator.com
 🚫 news.ycombinator.com does not support HTTP/2
