@@ -7,22 +7,49 @@ This repo will eventually be a system that collects data about various protocol 
 
 Project layout is based on https://github.com/golang-standards/project-layout
 
-Questions to answer
+# Questions to answer
+## HTTP
 - [ ] How many HTTP services have HTTP/1.0 enabled?
 - [ ] How many HTTP services have HTTP/2 enabled?
 - [ ] Are there HTTP services that do _not_ have HTTP/1.1 enabled?
 - [ ] How many HTTP services support HTTP/3?
-- [ ] How many HTTP services are served over IPv6? IPv4? Both?
-- [ ] How many TLS-enabled HTTP services support TLS 1.0?
-- [ ] How many TLS-enabled HTTP services support TLS 1.1?
+- [ ] How many HTTP services support UDP on :443? (prerequisite to QUIC/HTTP3)
+- [ ] How many HTTP services support plaintext HTTP on port 80?
+
+## IP
+Use DNS answers to check this (A records vs AAAA records), then connect over that IP address to confirm it is valid.
+- [ ] How many HTTP services are served over IPv6?
+- [ ] How many HTTP services are served over IPv4?
+- [ ] How many HTTP services are served over both?
+
+## TLS
+- [ ] How many TLS-enabled HTTP services support TLS 1.0? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
+- [ ] How many TLS-enabled HTTP services support TLS 1.1? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
 - [ ] How many TLS-enabled HTTP services support TLS 1.2?
 - [ ] How many TLS-enabled HTTP services support TLS 1.3?
+
+## CDNs/Datacenters
+Use the connecting IP address to approximate where the response is originating from, for example checking against [Cloudflare's public IP range](https://www.cloudflare.com/ips/).
+In order for this to be accurate, the probes will need to be run from multiple regions to account for multi-CDN architectures.
+Initial version will just be a single region to start with.
 - [ ] What percentage of HTTP services are served over Akamai?
 - [ ] What percentage of HTTP services are served over Cloudflare?
 - [ ] What percentage of HTTP services are served over Fastly?
 - [ ] What percentage of HTTP services are served directly from AWS?
 - [ ] What percentage of HTTP services are served directly from Google Cloud?
 - [ ] What percentage of HTTP services are served directly from Azure?
+
+## DNS
+- [ ] What percentage of domains use NS1 as an authoritative server?
+- [ ] What percentage of domains use Dyn/Oracle as an authoritative server?
+- [ ] What percentage of domains use Cloudflare as an authoritative server?
+- [ ] What percentage of domains respond `ANY` queries? (notorious for [DNS amplification attacks](https://www.cloudflare.com/learning/ddos/dns-amplification-ddos-attack/))
+- [ ] How long are CNAME chains? (broken into percentiles)
+
+## Misc.
+- [ ] Websocket use in the wild?
+- [ ] How many websites use Google Analytics?
+- [ ] Use of new HTML features? e.g. the `<picture>` tag, `<details>` tag, `<summary>` tag, etc.
 
 # Tools
 
