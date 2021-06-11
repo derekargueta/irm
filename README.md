@@ -27,6 +27,7 @@ Use DNS answers to check this (A records vs AAAA records), then connect over tha
 - [ ] How many TLS-enabled HTTP services support TLS 1.1? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
 - [ ] How many TLS-enabled HTTP services support TLS 1.2?
 - [ ] How many TLS-enabled HTTP services support TLS 1.3?
+- [ ] What is the distribution of root CA providers? (Digicert, Verisign, Komodo, etc.)
 
 ## CDNs/Datacenters
 Use the connecting IP address to approximate where the response is originating from, for example checking against [Cloudflare's public IP range](https://www.cloudflare.com/ips/).
