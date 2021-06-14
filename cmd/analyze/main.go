@@ -15,7 +15,6 @@ import (
 type results struct { //go data type
 	domainsTested int
 	http2enabled  int //increment when http2
-	http1enabled  int
 	http11enabled int
 }
 
@@ -24,25 +23,30 @@ const (
 
 	http2NoSupportMsgString = "🚫 %s does not support HTTP/2\n"
 	http2SupportMsgString   = "✅ %s supports HTTP/2\n"
+
+	http1xSupportMsgString = "✅ %s supports HTTP/1.1\n"
 )
 
 func sendHTTP1Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: http.DefaultTransport}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
-	request, _ := http.NewRequest("GET", "http://"+domain, nil)
+	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
 	return client.Do(request)
 }
 
 func sendHTTP2Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: &http2.Transport{}}
+	client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
-	request, _ := http.NewRequest("GET", "https://"+domain, nil)
+	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
 	return client.Do(request)
 }
 
-func filepathHTTP2(filepath string) {
+func filepathHTTP2(filepath string, results results) {
+	counthttp2 := 0
+	countoverall := 0
+	limit := 0
 	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
 
@@ -52,21 +56,46 @@ func filepathHTTP2(filepath string) {
 	}
 
 	for domain.Scan() {
-		time.Sleep(100 * time.Millisecond)
-		response, err := sendHTTP2Request(domain.Text())
+		if limit < 10 {
+			countoverall++
 
-		if response != nil {
-			response.Body.Close()
-		}
-		if err != nil {
-			fmt.Printf(http2NoSupportMsgString, domain.Text())
+			response, err := sendHTTP2Request(domain.Text())
+			if response != nil {
+				response.Body.Close()
+			}
+
+			if err != nil { //if http2 request returns error
+
+				response1, err1 := sendHTTP1Request(domain.Text())
+				if response1 != nil {
+					response1.Body.Close()
+				}
+				if err1 != nil {
+					fmt.Println("broken")
+				} else {
+					fmt.Printf(http1xSupportMsgString, domain.Text())
+					fmt.Println("")
+				}
+			} else {
+				fmt.Printf(http2SupportMsgString, domain.Text())
+				fmt.Println("")
+				counthttp2++
+			}
+
 		} else {
-			fmt.Printf(http2SupportMsgString, domain.Text())
+			break
 		}
-
+		limit++
 	}
+
+	results.domainsTested = countoverall
+	results.http2enabled = counthttp2
+
 }
 
+/*
+
+ */
 func websitepathHTTP2(urlInput string) {
 	time.Sleep(100 * time.Millisecond)
 	response, err := sendHTTP2Request(urlInput)
@@ -82,6 +111,8 @@ func websitepathHTTP2(urlInput string) {
 }
 
 func main() {
+	var results results
+
 	var filepath string
 	var urlInput string
 
@@ -90,12 +121,13 @@ func main() {
 	flag.Parse()
 
 	if filepath != "" {
-		filepathHTTP2(filepath)
+		filepathHTTP2(filepath, results)
 	} else if urlInput != "" {
 		websitepathHTTP2(urlInput)
 	}
 
 	/*
+		response.Body.Close()
 		-f : read file domains
 		-o : write to file csv
 
