@@ -9,6 +9,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/derekargueta/irm/pkg/util"
+
 	"golang.org/x/net/http2"
 )
 
@@ -82,6 +84,9 @@ func websitepathHTTP2(urlInput string) {
 }
 
 func main() {
+	// fmt.Println(util.Http10Request("https://www.google.com")) Google does
+	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
+
 	var filepath string
 	var urlInput string
 
