@@ -90,6 +90,12 @@ func main() {
 	var filepath string
 	var urlInput string
 
+	/**
+		$ analyze www.twitter.com # base case, probe one domain
+		$ analyze domains.txt -f  # -f makes the input a file name instead of URL
+		$ analyze domains.txt -f -o results.csv # same as above but write results to results.csv
+	 */
+
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&urlInput, "o", "", "Url")
 	flag.Parse()
