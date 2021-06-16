@@ -113,24 +113,21 @@ func websitepathHTTP2(urlInput string) {
 }
 
 func main() {
-<<<<<<< HEAD
 	var results results
-=======
 	// fmt.Println(util.Http10Request("https://www.google.com")) Google does
 	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
->>>>>>> 623b10c300d4a0a0c84b36b019105e05473dd5d0
 
 	var filepath string
 	var urlInput string
 
 	/**
-		$ analyze www.twitter.com # base case, probe one domain
-		$ analyze domains.txt -f  # -f makes the input a file name instead of URL
-		$ analyze domains.txt -f -o results.csv # same as above but write results to results.csv
-	 */
-
+	$ analyze www.twitter.com # base case, probe one domain
+	$ analyze domains.txt -f  # -f makes the input a file name instead of URL
+	$ analyze domains.txt -f -o results.csv # same as above but write results to results.csv
+	*/
+	urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
-	flag.StringVar(&urlInput, "o", "", "Url")
+	flag.StringVar(&filepath, "f -o", "", "export to csv")
 	flag.Parse()
 
 	if filepath != "" {
