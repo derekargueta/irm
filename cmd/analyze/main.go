@@ -50,24 +50,39 @@ func sendHTTP2Request(domain string) (*http.Response, error) {
 2. send jobs thru main
 */
 func fileEntry(filepath string) {
+
 	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
 	count := 0
 
-	jobs := make(chan string, 10)
-	results := make(chan string, 10)
+	chunkwebs := []string{}
+
+	jobs := make(chan []string, 100)
+	results := make(chan string, 1000)
 
 	if erroropen != nil {
 		log.Fatal(erroropen)
 		os.Exit(1)
 	}
+	// mycount := 0
+	// for domain.Scan() {
+	// 	mycount++
+	// }
+	// log.Println()
+
+	newcount := 0
 	for domain.Scan() {
-		count++
-		if count <= 10 {
-			jobs <- domain.Text()
-		} else {
-			break
+		if newcount < 1000 {
+			chunkwebs = append(chunkwebs, domain.Text())
+			if count == 10 {
+				log.Println(chunkwebs)
+				jobs <- chunkwebs
+				chunkwebs = []string{}
+				count = 0
+			}
+			count++
 		}
+		newcount++
 
 	}
 
@@ -76,22 +91,23 @@ func fileEntry(filepath string) {
 		log.Println("workers started")
 	}
 
-	close(jobs)
-
-	for a := 1; a <= 10; a++ {
+	for a := 1; a <= 1000; a++ {
 		<-results
 	}
 }
 
-func Worker(jobs <-chan string, results chan<- string) {
+func Worker(jobs <-chan []string, results chan<- string) {
 	for x := range jobs {
-		log.Println(filepathHTTP2(x))
-		results <- filepathHTTP2(x)
+		for y := range x {
+			log.Println(filepathHTTP(x[y]))
+			results <- filepathHTTP(x[y])
+		}
+
 	}
 
 }
 
-func filepathHTTP2(myURL string) string {
+func filepathHTTP(myURL string) string {
 
 	response, err := sendHTTP2Request(myURL)
 	if response != nil {
@@ -106,6 +122,7 @@ func filepathHTTP2(myURL string) string {
 		}
 		if err1 != nil {
 			fmt.Println("broken")
+			fmt.Println("")
 		} else {
 			return fmt.Sprintf(http1xSupportMsgString, myURL)
 
@@ -142,6 +159,7 @@ func filepathHTTP2OLD(filepath string) {
 				}
 				if err1 != nil {
 					fmt.Println("broken")
+					fmt.Println("")
 				} else {
 					fmt.Println(http1xSupportMsgString, domain.Text())
 
