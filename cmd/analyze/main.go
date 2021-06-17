@@ -45,22 +45,90 @@ func sendHTTP2Request(domain string) (*http.Response, error) {
 	return client.Do(request)
 }
 
-func filepathHTTP2(filepath string, results results) {
-	counthttp2 := 0
-	countoverall := 0
-	limit := 0
+/*
+1. scan each line (instantiate jobs,results) add to jobs
+2. send jobs thru main
+*/
+func fileEntry(filepath string) {
 	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
+	count := 0
+
+	jobs := make(chan string, 10)
+	results := make(chan string, 10)
 
 	if erroropen != nil {
 		log.Fatal(erroropen)
 		os.Exit(1)
 	}
-
 	for domain.Scan() {
-		if limit < 10 {
-			countoverall++
+		count++
+		if count <= 10 {
+			jobs <- domain.Text()
+		} else {
+			break
+		}
 
+	}
+
+	for x := 0; x < 10; x++ {
+		go Worker(jobs, results)
+		log.Println("workers started")
+	}
+
+	close(jobs)
+
+	for a := 1; a <= 10; a++ {
+		<-results
+	}
+}
+
+func Worker(jobs <-chan string, results chan<- string) {
+	for x := range jobs {
+		log.Println(filepathHTTP2(x))
+		results <- filepathHTTP2(x)
+	}
+
+}
+
+func filepathHTTP2(myURL string) string {
+
+	response, err := sendHTTP2Request(myURL)
+	if response != nil {
+		response.Body.Close()
+	}
+
+	if err != nil { //if http2 request returns error
+
+		response1, err1 := sendHTTP1Request(myURL)
+		if response1 != nil {
+			response1.Body.Close()
+		}
+		if err1 != nil {
+			fmt.Println("broken")
+		} else {
+			return fmt.Sprintf(http1xSupportMsgString, myURL)
+
+		}
+	}
+	return fmt.Sprintf(http2SupportMsgString, myURL)
+
+	// results.domainsTested = countoverall
+	// results.http2enabled = counthttp2
+
+}
+
+func filepathHTTP2OLD(filepath string) {
+	domains, erroropen := os.Open(filepath)
+	domain := bufio.NewScanner(domains)
+	limit := 0
+	if erroropen != nil {
+		log.Fatal(erroropen)
+		os.Exit(1)
+	}
+	for domain.Scan() {
+		limit++
+		if limit <= 10 {
 			response, err := sendHTTP2Request(domain.Text())
 			if response != nil {
 				response.Body.Close()
@@ -75,23 +143,21 @@ func filepathHTTP2(filepath string, results results) {
 				if err1 != nil {
 					fmt.Println("broken")
 				} else {
-					fmt.Printf(http1xSupportMsgString, domain.Text())
-					fmt.Println("")
+					fmt.Println(http1xSupportMsgString, domain.Text())
+
 				}
 			} else {
-				fmt.Printf(http2SupportMsgString, domain.Text())
-				fmt.Println("")
-				counthttp2++
-			}
+				fmt.Println(http2SupportMsgString, domain.Text())
 
+			}
 		} else {
 			break
 		}
-		limit++
+
 	}
 
-	results.domainsTested = countoverall
-	results.http2enabled = counthttp2
+	// results.domainsTested = countoverall
+	// results.http2enabled = counthttp2
 
 }
 
@@ -113,25 +179,28 @@ func websitepathHTTP2(urlInput string) {
 }
 
 func main() {
-	var results results
+
 	// fmt.Println(util.Http10Request("https://www.google.com")) Google does
 	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
-
-	var filepath string
-	var urlInput string
 
 	/**
 	$ analyze www.twitter.com # base case, probe one domain
 	$ analyze domains.txt -f  # -f makes the input a file name instead of URL
 	$ analyze domains.txt -f -o results.csv # same as above but write results to results.csv
 	*/
+
+	var filepath string
+	var urlInput string
+
 	urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepath, "f -o", "", "export to csv")
 	flag.Parse()
 
 	if filepath != "" {
-		filepathHTTP2(filepath, results)
+		fileEntry(filepath)
+		//filepathHTTP2OLD(filepath)
+
 	} else if urlInput != "" {
 		websitepathHTTP2(urlInput)
 	}
