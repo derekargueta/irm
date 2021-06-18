@@ -30,7 +30,7 @@ const (
 )
 
 func sendHTTP1Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
@@ -38,11 +38,18 @@ func sendHTTP1Request(domain string) (*http.Response, error) {
 }
 
 func sendHTTP2Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: &http2.Transport{}, Timeout: 5 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
 	return client.Do(request)
+}
+
+func worker(input, output chan string) {
+	for x := range input {
+		output <- filepathHTTP(x)
+		fmt.Println(x)
+	}
 }
 
 /*
@@ -53,11 +60,8 @@ func fileEntry(filepath string) {
 
 	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
-	count := 0
 
-	chunkwebs := []string{}
-
-	jobs := make(chan []string, 100)
+	jobs := make(chan string, 100)
 	results := make(chan string, 1000)
 
 	if erroropen != nil {
@@ -69,30 +73,27 @@ func fileEntry(filepath string) {
 	// 	mycount++
 	// }
 	// log.Println()
-
-	newcount := 0
+	for x := 0; x < 30; x++ {
+		go func() {
+			worker(jobs, results)
+		}()
+	}
+	log.Println("workers started")
+	count := 0
 	for domain.Scan() {
-		if newcount < 1000 {
-			chunkwebs = append(chunkwebs, domain.Text())
-			if count == 10 {
-				log.Println(chunkwebs)
-				jobs <- chunkwebs
-				chunkwebs = []string{}
-				count = 0
-			}
-			count++
+		jobs <- domain.Text()
+		count++
+	}
+	close(jobs)
+
+	resultCount := 0
+	for result := range results {
+		fmt.Println(result)
+		resultCount += 1
+
+		if count == resultCount {
+			close(results)
 		}
-		newcount++
-
-	}
-
-	for x := 0; x < 10; x++ {
-		go Worker(jobs, results)
-		log.Println("workers started")
-	}
-
-	for a := 1; a <= 1000; a++ {
-		<-results
 	}
 }
 
@@ -121,7 +122,7 @@ func filepathHTTP(myURL string) string {
 			response1.Body.Close()
 		}
 		if err1 != nil {
-			fmt.Println("broken")
+			log.Println(err1.Error())
 			fmt.Println("")
 		} else {
 			return fmt.Sprintf(http1xSupportMsgString, myURL)
@@ -135,49 +136,49 @@ func filepathHTTP(myURL string) string {
 
 }
 
-func filepathHTTP2OLD(filepath string) {
-	domains, erroropen := os.Open(filepath)
-	domain := bufio.NewScanner(domains)
-	limit := 0
-	if erroropen != nil {
-		log.Fatal(erroropen)
-		os.Exit(1)
-	}
-	for domain.Scan() {
-		limit++
-		if limit <= 10 {
-			response, err := sendHTTP2Request(domain.Text())
-			if response != nil {
-				response.Body.Close()
-			}
+// func filepathHTTP2OLD(filepath string) {
+// 	domains, erroropen := os.Open(filepath)
+// 	domain := bufio.NewScanner(domains)
+// 	limit := 0
+// 	if erroropen != nil {
+// 		log.Fatal(erroropen)
+// 		os.Exit(1)
+// 	}
+// 	for domain.Scan() {
+// 		limit++
+// 		if limit <= 10 {
+// 			response, err := sendHTTP2Request(domain.Text())
+// 			if response != nil {
+// 				response.Body.Close()
+// 			}
 
-			if err != nil { //if http2 request returns error
+// 			if err != nil { //if http2 request returns error
 
-				response1, err1 := sendHTTP1Request(domain.Text())
-				if response1 != nil {
-					response1.Body.Close()
-				}
-				if err1 != nil {
-					fmt.Println("broken")
-					fmt.Println("")
-				} else {
-					fmt.Println(http1xSupportMsgString, domain.Text())
+// 				response1, err1 := sendHTTP1Request(domain.Text())
+// 				if response1 != nil {
+// 					response1.Body.Close()
+// 				}
+// 				if err1 != nil {
+// 					log.Println(err1.Error())
+// 					fmt.Println("")
+// 				} else {
+// 					fmt.Println(http1xSupportMsgString, domain.Text())
 
-				}
-			} else {
-				fmt.Println(http2SupportMsgString, domain.Text())
+// 				}
+// 			} else {
+// 				fmt.Println(http2SupportMsgString, domain.Text())
 
-			}
-		} else {
-			break
-		}
+// 			}
+// 		} else {
+// 			break
+// 		}
 
-	}
+// 	}
 
-	// results.domainsTested = countoverall
-	// results.http2enabled = counthttp2
+// 	// results.domainsTested = countoverall
+// 	// results.http2enabled = counthttp2
 
-}
+// }
 
 /*
 
