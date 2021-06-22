@@ -1,8 +1,9 @@
 package util
 
 import (
-	"strings"
+	"fmt"
 	"os/exec"
+	"strings"
 )
 
 // Seems that the Go standard library does not support HTTP/1.0 requests?
@@ -10,7 +11,7 @@ import (
 func Http10Request(url string) bool {
 	out, err := exec.Command("curl", "-svo", "/dev/null", "--http1.0", url).CombinedOutput()
 	if err != nil {
-		panic(err)
+		fmt.Println("error in http1.0")
 	}
 
 	strOut := string(out)
