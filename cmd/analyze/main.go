@@ -7,17 +7,23 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/derekargueta/irm/pkg/util"
 	"golang.org/x/net/http2"
 )
 
-type results struct { //go data type
+type TotalTestResult struct { //go data type
 	domainsTested int
 	http2enabled  int //increment when http2
 	http11enabled int
 	http10enabled int
+}
+
+type ProbeResult struct {
+	http2enabled  bool
+	http11enabled bool
+	http10enabled bool
 }
 
 const (
@@ -46,9 +52,9 @@ func sendHTTP2Request(domain string) (*http.Response, error) {
 	return client.Do(request)
 }
 
-func worker(input, output chan string, totalresults results) {
+func worker(input chan string, output chan ProbeResult) {
 	for x := range input {
-		output <- filepathHTTP(x, totalresults)
+		output <- filepathHTTP(x)
 		fmt.Println(x)
 	}
 }
@@ -57,28 +63,25 @@ func worker(input, output chan string, totalresults results) {
 1. scan each line (instantiate jobs,results) add to jobs
 2. send jobs thru main
 */
-func fileEntry(filepath string, totalresults results) {
+func fileEntry(filepath string) TotalTestResult {
 
 	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
 
 	jobs := make(chan string, 100)
-	results := make(chan string, 1000)
+	results := make(chan ProbeResult, 1000000)
 
 	if erroropen != nil {
 		log.Fatal(erroropen)
 		os.Exit(1)
 	}
-	// mycount := 0
-	// for domain.Scan() {
-	// 	mycount++
-	// }
-	// log.Println()
+
 	for x := 0; x < 30; x++ {
 		go func() {
-			worker(jobs, results, totalresults)
+			worker(jobs, results)
 		}()
 	}
+
 	log.Println("workers started")
 	count := 0
 	for domain.Scan() {
@@ -88,49 +91,54 @@ func fileEntry(filepath string, totalresults results) {
 	close(jobs)
 
 	resultCount := 0
+	totalresults := TotalTestResult{}
 	for result := range results {
-		fmt.Println(result)
 		resultCount += 1
+		totalresults.domainsTested += 1
+
+		if result.http2enabled {
+			totalresults.http2enabled += 1
+		}
+
+		if result.http11enabled {
+			totalresults.http11enabled += 1
+		}
 
 		if count == resultCount {
 			close(results)
 		}
 	}
+
+	return totalresults
 }
 
-func filepathHTTP(myURL string, totalresults results) string {
-	fmt.Println(myURL)
+func filepathHTTP(myURL string) ProbeResult {
+	result := ProbeResult{}
 	response, err := sendHTTP2Request(myURL)
-
 	if response != nil {
 		response.Body.Close()
 	}
-	if err != nil { //if http2 request returns error
-		response1, err1 := sendHTTP1Request(myURL)
 
-		if response1 != nil {
-			response1.Body.Close()
-		}
-		if err1 != nil {
-			http10test := util.Http10Request("https://www." + myURL)
-			if http10test == true {
-				totalresults.http10enabled++
-				return fmt.Sprintf(http10SupportMsgString, myURL)
-			} else {
-				log.Println(err1.Error())
-				fmt.Println("")
-			}
-
-		} else {
-			totalresults.http11enabled++
-			return fmt.Sprintf(http1xSupportMsgString, myURL)
-
+	if err == nil { //if http2 request returns error
+		result.http2enabled = true
+	} else {
+		errOtherThanHTTP2Support := !strings.Contains(err.Error(), "unexpected ALPN protocol")
+		if errOtherThanHTTP2Support {
+			log.Println(err.Error())
 		}
 	}
 
-	totalresults.http2enabled++
-	return fmt.Sprintf(http2SupportMsgString, myURL)
+	response1, err1 := sendHTTP1Request(myURL)
+	if response1 != nil {
+		response1.Body.Close()
+	}
+	if err1 == nil {
+		result.http11enabled = true
+	} else {
+		log.Println(err1.Error())
+	}
 
+	return result
 }
 
 func websitepathHTTP2(urlInput string) {
@@ -152,6 +160,10 @@ func main() {
 	// fmt.Println(util.Http10Request("https://www.google.com")) Google does
 	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
 
+	/*
+		* use support string for one-off checks, but exclude for mass scans (indicated by use of `-f` for a file of domains)
+	*/
+
 	/**
 	$ analyze www.twitter.com # base case, probe one domain
 	$ analyze domains.txt -f  # -f makes the input a file name instead of URL
@@ -160,20 +172,19 @@ func main() {
 
 	var filepath string
 	var urlInput string
-	var totalresults results
 	urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
-	flag.StringVar(&filepath, "f -o", "", "export to csv")
+	flag.StringVar(&filepath, "o", "", "export to csv")
 	flag.Parse()
 
 	if filepath != "" {
-		fileEntry(filepath, totalresults)
-		//filepathHTTP2OLD(filepath)
-
+		totalresults := fileEntry(filepath)
+		fmt.Printf("domains tested: %d\n", totalresults.domainsTested)
+		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled) / float32(totalresults.domainsTested)) * 100)
+		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled) / float32(totalresults.domainsTested)) * 100)
 	} else if urlInput != "" {
 		websitepathHTTP2(urlInput)
 	}
-	fmt.Printf("http2: %d", totalresults.http2enabled)
 	/*
 		response.Body.Close()
 		-f : read file domains
