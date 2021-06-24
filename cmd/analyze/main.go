@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"log"
@@ -161,8 +162,8 @@ func main() {
 	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
 
 	/*
-		* use support string for one-off checks, but exclude for mass scans (indicated by use of `-f` for a file of domains)
-	*/
+	* use support string for one-off checks, but exclude for mass scans (indicated by use of `-f` for a file of domains)
+	 */
 
 	/**
 	$ analyze www.twitter.com # base case, probe one domain
@@ -177,14 +178,34 @@ func main() {
 	flag.StringVar(&filepath, "o", "", "export to csv")
 	flag.Parse()
 
+	totalresults := fileEntry(filepath)
 	if filepath != "" {
-		totalresults := fileEntry(filepath)
+
 		fmt.Printf("domains tested: %d\n", totalresults.domainsTested)
-		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled) / float32(totalresults.domainsTested)) * 100)
-		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled) / float32(totalresults.domainsTested)) * 100)
+		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)
+		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)
 	} else if urlInput != "" {
 		websitepathHTTP2(urlInput)
 	}
+	var data = [][]string{
+		{"Domain tested", fmt.Sprintf("%d", totalresults.domainsTested)},
+		{"percent http/2:", fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)},
+		{"percent http/1.1:", fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
+	}
+
+	file, err := os.Create("result.csv")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defer file.Close()
+
+	writer := csv.NewWriter(file)
+	defer writer.Flush()
+
+	for _, value := range data {
+		writer.Write(value)
+	}
+
 	/*
 		response.Body.Close()
 		-f : read file domains
