@@ -61,8 +61,8 @@ func worker(input chan string, output chan ProbeResult) {
 }
 
 /*
-1. scan each line (instantiate jobs,results) add to jobs
-2. send jobs thru main
+create listener to prevent tcp error
+instantiate before starting workers
 */
 func fileEntry(filepath string) TotalTestResult {
 
@@ -172,10 +172,11 @@ func main() {
 	*/
 
 	var filepath string
+	var filepathexport string
 	var urlInput string
 	urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
-	flag.StringVar(&filepath, "o", "", "export to csv")
+	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.Parse()
 
 	totalresults := fileEntry(filepath)
@@ -186,24 +187,25 @@ func main() {
 		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)
 	} else if urlInput != "" {
 		websitepathHTTP2(urlInput)
-	}
-	var data = [][]string{
-		{"Domain tested", fmt.Sprintf("%d", totalresults.domainsTested)},
-		{"percent http/2:", fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)},
-		{"percent http/1.1:", fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
-	}
+	} else if filepathexport != "" {
+		var data = [][]string{
+			{"Domain tested", fmt.Sprintf("%d", totalresults.domainsTested)},
+			{"percent http/2:", fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)},
+			{"percent http/1.1:", fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
+		}
 
-	file, err := os.Create("result.csv")
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	defer file.Close()
+		file, err := os.Create("results/result.csv")
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		defer file.Close()
 
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
+		writer := csv.NewWriter(file)
+		defer writer.Flush()
 
-	for _, value := range data {
-		writer.Write(value)
+		for _, value := range data {
+			writer.Write(value)
+		}
 	}
 
 	/*
