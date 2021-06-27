@@ -42,6 +42,7 @@ func sendHTTP1Request(domain string) (*http.Response, error) {
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
+	request.Close = true
 	return client.Do(request)
 }
 
@@ -50,7 +51,7 @@ func sendHTTP2Request(domain string) (*http.Response, error) {
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
-
+	request.Close = true
 	return client.Do(request)
 }
 
@@ -158,6 +159,8 @@ func websitepathHTTP2(urlInput string) {
 }
 
 func main() {
+	// Try to minimize filesystem usage and avoid lingering connections.
+	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
 
 	// fmt.Println(util.Http10Request("https://www.google.com")) Google does
 	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
