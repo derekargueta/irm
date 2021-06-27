@@ -42,6 +42,7 @@ func sendHTTP1Request(domain string) (*http.Response, error) {
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
+	request.Close = true
 	return client.Do(request)
 }
 
@@ -50,6 +51,7 @@ func sendHTTP2Request(domain string) (*http.Response, error) {
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
+	request.Close = true
 	return client.Do(request)
 }
 
@@ -157,6 +159,8 @@ func websitepathHTTP2(urlInput string) {
 }
 
 func main() {
+	// Try to minimize filesystem usage and avoid lingering connections.
+	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
 
 	// fmt.Println(util.Http10Request("https://www.google.com")) Google does
 	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
@@ -174,18 +178,50 @@ func main() {
 	var filepath string
 	var filepathexport string
 	var urlInput string
+	var filepathexport string
 	urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.Parse()
 
-	totalresults := fileEntry(filepath)
-	if filepath != "" {
+	if filepathexport != "" && filepath != "" {
+		fmt.Println("in both right now")
 
+		totalresults := fileEntry(filepath)
+		data := [][]string{
+
+			{"time stamp", "Domain tested", "percent http2", "percent http1.1"},
+			{time.Now().String(), fmt.Sprintf("%d", totalresults.domainsTested),
+				fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
+				fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
+		}
+		/*
+			base csv file
+			increment when new data incoming
+			* If file already exist, only increment/change data not title
+		*/
+		file, err := os.Create(filepathexport)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		defer file.Close()
+
+		writer := csv.NewWriter(file)
+		defer writer.Flush()
+
+		for _, value := range data {
+			writer.Write(value)
+		}
+
+	} else if filepath != "" {
+
+		totalresults := fileEntry(filepath)
 		fmt.Printf("domains tested: %d\n", totalresults.domainsTested)
 		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)
 		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)
+
 	} else if urlInput != "" {
+		fmt.Println("in one right now")
 		websitepathHTTP2(urlInput)
 	} else if filepathexport != "" {
 		var data = [][]string{
@@ -194,7 +230,7 @@ func main() {
 			{"percent http/1.1:", fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
 		}
 
-		file, err := os.Create("results/result.csv")
+		file, err := os.Create(filepathexport)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -208,6 +244,7 @@ func main() {
 		}
 	}
 
+	}
 	/*
 		response.Body.Close()
 		-f : read file domains
