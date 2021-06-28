@@ -118,6 +118,7 @@ func fileEntry(filepath string) TotalTestResult {
 func filepathHTTP(myURL string) ProbeResult {
 	result := ProbeResult{}
 	response, err := sendHTTP2Request(myURL)
+
 	if response != nil {
 		response.Body.Close()
 	}
@@ -127,7 +128,7 @@ func filepathHTTP(myURL string) ProbeResult {
 	} else {
 		errOtherThanHTTP2Support := !strings.Contains(err.Error(), "unexpected ALPN protocol")
 		if errOtherThanHTTP2Support {
-			log.Println(err.Error())
+			log.Println(err.Error() + "this specific error")
 		}
 	}
 
@@ -176,7 +177,6 @@ func main() {
 	*/
 
 	var filepath string
-	var filepathexport string
 	var urlInput string
 	var filepathexport string
 	urlInput = os.Args[1]
@@ -195,24 +195,43 @@ func main() {
 				fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
 				fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
 		}
+
+		checkFile, err := os.Stat(filepathexport)
+
+		if os.IsNotExist(err) {
+			log.Println(checkFile)
+			file, err := os.Create(filepathexport)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			defer file.Close()
+
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+
+			for _, value := range data {
+				writer.Write(value)
+			}
+		} else {
+			file, err := os.Open(filepathexport)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			defer file.Close()
+
+			writer := csv.NewWriter(file)
+			defer writer.Flush()
+
+			for _, value := range data {
+				writer.Write(value)
+			}
+
+		}
 		/*
 			base csv file
 			increment when new data incoming
 			* If file already exist, only increment/change data not title
 		*/
-		file, err := os.Create(filepathexport)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		defer file.Close()
-
-		writer := csv.NewWriter(file)
-		defer writer.Flush()
-
-		for _, value := range data {
-			writer.Write(value)
-		}
-
 	} else if filepath != "" {
 
 		totalresults := fileEntry(filepath)
@@ -223,33 +242,13 @@ func main() {
 	} else if urlInput != "" {
 		fmt.Println("in one right now")
 		websitepathHTTP2(urlInput)
-	} else if filepathexport != "" {
-		var data = [][]string{
-			{"Domain tested", fmt.Sprintf("%d", totalresults.domainsTested)},
-			{"percent http/2:", fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)},
-			{"percent http/1.1:", fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
-		}
-
-		file, err := os.Create(filepathexport)
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		defer file.Close()
-
-		writer := csv.NewWriter(file)
-		defer writer.Flush()
-
-		for _, value := range data {
-			writer.Write(value)
-		}
 	}
-
-	}
-	/*
-		response.Body.Close()
-		-f : read file domains
-		-o : write to file csv
-
-	*/
 
 }
+
+/*
+	response.Body.Close()
+	-f : read file domains
+	-o : write to file csv
+
+*/
