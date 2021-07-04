@@ -15,16 +15,21 @@ import (
 )
 
 type TotalTestResult struct { //go data type
-	domainsTested int
-	http2enabled  int //increment when http2
-	http11enabled int
-	http10enabled int
+	domainsTested     int
+	http2enabled      int //increment when http2
+	http11enabled     int
+	http10enabled     int
+	errorhttp1occured int
+	errorhttp2occured int
+	erroroccured      int
 }
 
 type ProbeResult struct {
-	http2enabled  bool
-	http11enabled bool
-	http10enabled bool
+	http2enabled      bool
+	http11enabled     bool
+	http10enabled     bool
+	errorhttp1occured bool
+	errorhttp2occured bool
 }
 
 const (
@@ -38,7 +43,7 @@ const (
 )
 
 func sendHTTP1Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 15 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
@@ -79,7 +84,7 @@ func fileEntry(filepath string) TotalTestResult {
 		os.Exit(1)
 	}
 
-	for x := 0; x < 30; x++ {
+	for x := 0; x < 100; x++ {
 		go func() {
 			worker(jobs, results)
 		}()
@@ -99,6 +104,17 @@ func fileEntry(filepath string) TotalTestResult {
 		resultCount += 1
 		totalresults.domainsTested += 1
 
+		if result.errorhttp1occured && result.errorhttp2occured {
+			totalresults.erroroccured += 1
+		}
+
+		if result.errorhttp1occured {
+			totalresults.errorhttp1occured += 1
+		}
+		if result.errorhttp2occured {
+			totalresults.errorhttp2occured += 1
+		}
+
 		if result.http2enabled {
 			totalresults.http2enabled += 1
 		}
@@ -106,7 +122,6 @@ func fileEntry(filepath string) TotalTestResult {
 		if result.http11enabled {
 			totalresults.http11enabled += 1
 		}
-
 		if count == resultCount {
 			close(results)
 		}
@@ -128,8 +143,10 @@ func filepathHTTP(myURL string) ProbeResult {
 	} else {
 		errOtherThanHTTP2Support := !strings.Contains(err.Error(), "unexpected ALPN protocol")
 		if errOtherThanHTTP2Support {
-			log.Println(err.Error() + "this specific error")
+			log.Println(err.Error() + " - request error for http2")
+			result.errorhttp2occured = true
 		}
+
 	}
 
 	response1, err1 := sendHTTP1Request(myURL)
@@ -139,7 +156,8 @@ func filepathHTTP(myURL string) ProbeResult {
 	if err1 == nil {
 		result.http11enabled = true
 	} else {
-		log.Println(err1.Error())
+		log.Println(err1.Error() + "by http1.0 request")
+		result.errorhttp1occured = true
 	}
 
 	return result
@@ -190,10 +208,11 @@ func main() {
 		totalresults := fileEntry(filepath)
 		data := [][]string{
 
-			{"time stamp", "Domain tested", "percent http2", "percent http1.1"},
+			{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent error"},
 			{time.Now().String(), fmt.Sprintf("%d", totalresults.domainsTested),
 				fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
-				fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)},
+				fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100),
+				fmt.Sprintf("%f", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)},
 		}
 
 		checkFile, err := os.Stat(filepathexport)
@@ -238,7 +257,9 @@ func main() {
 		fmt.Printf("domains tested: %d\n", totalresults.domainsTested)
 		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)
 		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)
-
+		fmt.Printf("percent connection error: %.2f%%\n", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)
+		fmt.Printf("percent http1.1 error: %.2f%%\n", (float32(totalresults.errorhttp1occured)/float32(totalresults.domainsTested))*100)
+		fmt.Printf("percent http2 error: %.2f%%\n", (float32(totalresults.errorhttp2occured)/float32(totalresults.domainsTested))*100)
 	} else if urlInput != "" {
 		fmt.Println("in one right now")
 		websitepathHTTP2(urlInput)
