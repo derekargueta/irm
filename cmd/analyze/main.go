@@ -43,10 +43,10 @@ const (
 )
 
 func sendHTTP1Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 15 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
-	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
+	request, _ := http.NewRequest("GET", "https://"+domain, nil)
 	request.Close = true
 	return client.Do(request)
 }
@@ -55,7 +55,7 @@ func sendHTTP2Request(domain string) (*http.Response, error) {
 	client := &http.Client{Transport: &http2.Transport{}, Timeout: 5 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
-	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
+	request, _ := http.NewRequest("GET", "https://"+domain, nil)
 	request.Close = true
 	return client.Do(request)
 }
@@ -76,7 +76,7 @@ func fileEntry(filepath string) TotalTestResult {
 	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
 
-	jobs := make(chan string, 100)
+	jobs := make(chan string, 300)
 	results := make(chan ProbeResult, 1000000)
 
 	if erroropen != nil {
@@ -84,7 +84,7 @@ func fileEntry(filepath string) TotalTestResult {
 		os.Exit(1)
 	}
 
-	for x := 0; x < 100; x++ {
+	for x := 0; x < 30; x++ {
 		go func() {
 			worker(jobs, results)
 		}()
@@ -202,50 +202,56 @@ func main() {
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.Parse()
 
+	checkFile, err := os.Stat(filepathexport)
+
 	if filepathexport != "" && filepath != "" {
 		fmt.Println("in both right now")
 
 		totalresults := fileEntry(filepath)
-		data := [][]string{
-
-			{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent error"},
-			{time.Now().String(), fmt.Sprintf("%d", totalresults.domainsTested),
-				fmt.Sprintf("%f", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
-				fmt.Sprintf("%f", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100),
-				fmt.Sprintf("%f", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)},
+		dataHead := [][]string{
+			{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
 		}
+		/*
 
-		checkFile, err := os.Stat(filepathexport)
 
+		 */
+		data := [][]string{
+			{time.Now().Format("2006-01-02 15:04:05"),
+				fmt.Sprintf("%d", totalresults.domainsTested),
+				fmt.Sprintf("%.2f%%", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
+				fmt.Sprintf("%.2f%%", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100),
+				fmt.Sprintf("%.2f%%", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)},
+		}
 		if os.IsNotExist(err) {
 			log.Println(checkFile)
 			file, err := os.Create(filepathexport)
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			defer file.Close()
-
 			writer := csv.NewWriter(file)
-			defer writer.Flush()
 
-			for _, value := range data {
-				writer.Write(value)
+			for _, x := range dataHead {
+				writer.Write(x)
 			}
-		} else {
-			file, err := os.Open(filepathexport)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-			defer file.Close()
+			writer.Flush()
+			file.Close()
 
-			writer := csv.NewWriter(file)
-			defer writer.Flush()
-
-			for _, value := range data {
-				writer.Write(value)
-			}
-
+			// writer.Write()
 		}
+
+		file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+
+		writer := csv.NewWriter(file)
+
+		for _, value := range data {
+			writer.Write(value)
+		}
+		writer.Flush()
+		file.Close()
+
 		/*
 			base csv file
 			increment when new data incoming
@@ -258,8 +264,9 @@ func main() {
 		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)
 		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)
 		fmt.Printf("percent connection error: %.2f%%\n", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)
-		fmt.Printf("percent http1.1 error: %.2f%%\n", (float32(totalresults.errorhttp1occured)/float32(totalresults.domainsTested))*100)
-		fmt.Printf("percent http2 error: %.2f%%\n", (float32(totalresults.errorhttp2occured)/float32(totalresults.domainsTested))*100)
+		fmt.Printf("percent http1.1 error: %.2f%%\n", (float32(totalresults.errorhttp1occured)/float32(totalresults.http11enabled))*100)
+		fmt.Printf("percent http2 error: %.2f%%\n", (float32(totalresults.errorhttp2occured)/float32(totalresults.http2enabled))*100)
+		fmt.Print("lasdbsdfbskjdvnldkjvkabsdvalisdbvlibslvbdsvbdkvjbdkjvbkjshdbvkshdb")
 	} else if urlInput != "" {
 		fmt.Println("in one right now")
 		websitepathHTTP2(urlInput)
