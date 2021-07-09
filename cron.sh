@@ -1,11 +1,16 @@
 #!/bin/bash
 
-if [ ! -f "/code/irm/tmp/irm-data/results.csv" ]; then
-  mkdir -p /code/irm/tmp
-  git clone git@github.com:derekargueta/irm-data.git > /code/irm/tmp/irm-data
+set -euxo pipefail
+
+data_directory="$HOME/code/irm/tmp/irm-data"
+
+if [ ! -d "$data_directory" ]; then
+  mkdir -p "$HOME/code/irm/tmp"
+  cd "$HOME/code/irm/tmp"
+  git clone git@github.com:derekargueta/irm-data.git
 fi
 
-cd /code/irm/tmp/irm-data
+cd "$data_directory"
 git pull origin master
 cd ../..
 make build-docker
