@@ -5,3 +5,6 @@ build-docker:
 
 run-docker:
 	docker run -it irm
+
+cron-docker:
+	docker run -it -e WORKERS=20 irm
