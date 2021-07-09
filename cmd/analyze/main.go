@@ -266,7 +266,6 @@ func main() {
 		fmt.Printf("percent connection error: %.2f%%\n", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)
 		fmt.Printf("percent http1.1 error: %.2f%%\n", (float32(totalresults.errorhttp1occured)/float32(totalresults.http11enabled))*100)
 		fmt.Printf("percent http2 error: %.2f%%\n", (float32(totalresults.errorhttp2occured)/float32(totalresults.http2enabled))*100)
-		fmt.Print("lasdbsdfbskjdvnldkjvkabsdvalisdbvlibslvbdsvbdkvjbdkjvbkjshdbvkshdb")
 	} else if urlInput != "" {
 		fmt.Println("in one right now")
 		websitepathHTTP2(urlInput)
