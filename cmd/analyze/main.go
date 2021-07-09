@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -43,7 +44,7 @@ const (
 )
 
 func sendHTTP1Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://"+domain, nil)
@@ -52,7 +53,7 @@ func sendHTTP1Request(domain string) (*http.Response, error) {
 }
 
 func sendHTTP2Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: &http2.Transport{}, Timeout: 5 * time.Second}
+	client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
 
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://"+domain, nil)
@@ -63,7 +64,6 @@ func sendHTTP2Request(domain string) (*http.Response, error) {
 func worker(input chan string, output chan ProbeResult) {
 	for x := range input {
 		output <- filepathHTTP(x)
-		fmt.Println(x)
 	}
 }
 
@@ -71,7 +71,7 @@ func worker(input chan string, output chan ProbeResult) {
 create listener to prevent tcp error
 instantiate before starting workers
 */
-func fileEntry(filepath string) TotalTestResult {
+func fileEntry(filepath string, workers int) TotalTestResult {
 
 	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
@@ -84,7 +84,7 @@ func fileEntry(filepath string) TotalTestResult {
 		os.Exit(1)
 	}
 
-	for x := 0; x < 30; x++ {
+	for x := 0; x < workers; x++ {
 		go func() {
 			worker(jobs, results)
 		}()
@@ -156,7 +156,7 @@ func filepathHTTP(myURL string) ProbeResult {
 	if err1 == nil {
 		result.http11enabled = true
 	} else {
-		log.Println(err1.Error() + "by http1.0 request")
+		log.Println(err1.Error() + " by http1.1 request")
 		result.errorhttp1occured = true
 	}
 
@@ -181,9 +181,6 @@ func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
 	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
 
-	// fmt.Println(util.Http10Request("https://www.google.com")) Google does
-	// fmt.Println(util.Http10Request("https://www.facebook.com")) Facebook does not
-
 	/*
 	* use support string for one-off checks, but exclude for mass scans (indicated by use of `-f` for a file of domains)
 	 */
@@ -197,17 +194,21 @@ func main() {
 	var filepath string
 	var urlInput string
 	var filepathexport string
+	var numWorkers int
 	urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
+	flag.IntVar(&numWorkers, "w", runtime.NumCPU() * 2, "number of workers")
 	flag.Parse()
+
+	log.Printf("Running with %d goroutine workers\n", numWorkers)
 
 	checkFile, err := os.Stat(filepathexport)
 
 	if filepathexport != "" && filepath != "" {
 		fmt.Println("in both right now")
 
-		totalresults := fileEntry(filepath)
+		totalresults := fileEntry(filepath, numWorkers)
 		dataHead := [][]string{
 			{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
 		}
@@ -241,7 +242,7 @@ func main() {
 
 		file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Fatal(err.Error())
 		}
 
 		writer := csv.NewWriter(file)
@@ -259,7 +260,7 @@ func main() {
 		*/
 	} else if filepath != "" {
 
-		totalresults := fileEntry(filepath)
+		totalresults := fileEntry(filepath, numWorkers)
 		fmt.Printf("domains tested: %d\n", totalresults.domainsTested)
 		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)
 		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)
