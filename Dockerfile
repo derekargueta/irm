@@ -1,6 +1,7 @@
 FROM golang:1.14-alpine
 
-ENV WORKERS=$(nproc)
+# Can be overridden at runtime using `docker run -e WORKERS=n ...`
+ENV WORKERS=25
 
 WORKDIR /app
 COPY . .
