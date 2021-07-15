@@ -1,6 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
-
+cd cmd/analyze/results
+cp results.csv /root/irm-data/
+cd ~/irm-data/
+git add --all
+git commit -m "timely commit"
+git push
 
 
 

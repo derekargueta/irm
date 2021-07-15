@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"time"
@@ -195,11 +196,11 @@ func main() {
 
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
 
-	resultsdr, merr := os.Getwd()
+	maindr, merr := os.Getwd()
 	if merr != nil {
 		log.Fatal(merr)
 	}
-	fullresultdr := strings.Replace(resultsdr, "\\", "/", -1) + "/cmd/analyze/results/results.csv"
+	fullresultdr := strings.Replace(maindr, "\\", "/", -1) + "/cmd/analyze/results/results.csv"
 	checkFile, err := os.Stat(fullresultdr)
 
 	if filepath != "" {
@@ -248,6 +249,12 @@ func main() {
 			}
 			writer.Flush()
 			file.Close()
+			fmt.Println("Done")
+
+			chrondir := maindr + "/cron.sh"
+			fmt.Println(chrondir)
+			cmd := exec.Command("/bin/sh", chrondir)
+			cmd.Run()
 			time.Sleep(time.Duration(timebetrun) * time.Second)
 		}
 	}
