@@ -181,102 +181,75 @@ func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
 	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
 
-	/*
-	* use support string for one-off checks, but exclude for mass scans (indicated by use of `-f` for a file of domains)
-	 */
-
-	/**
-	$ analyze www.twitter.com # base case, probe one domain
-	$ analyze domains.txt -f  # -f makes the input a file name instead of URL
-	$ analyze domains.txt -f -o results.csv # same as above but write results to results.csv
-	*/
-
 	var filepath string
-	var urlInput string
+	// var urlInput string
 	var filepathexport string
 	var numWorkers int
-	urlInput = os.Args[1]
+	var timebetrun int
+	// urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
-	flag.IntVar(&numWorkers, "w", runtime.NumCPU() * 2, "number of workers")
+	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
+	flag.IntVar(&timebetrun, "d", 10, "time between runs")
 	flag.Parse()
 
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
 
-	checkFile, err := os.Stat(filepathexport)
+	resultsdr, merr := os.Getwd()
+	if merr != nil {
+		log.Fatal(merr)
+	}
+	fullresultdr := strings.Replace(resultsdr, "\\", "/", -1) + "/cmd/analyze/results/results.csv"
+	checkFile, err := os.Stat(fullresultdr)
 
-	if filepathexport != "" && filepath != "" {
-		fmt.Println("in both right now")
+	if filepath != "" {
+		for x := 0; x > -1; x++ {
+			fmt.Println("in both right now")
 
-		totalresults := fileEntry(filepath, numWorkers)
-		dataHead := [][]string{
-			{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
-		}
-		/*
-
-
-		 */
-		data := [][]string{
-			{time.Now().Format("2006-01-02 15:04:05"),
-				fmt.Sprintf("%d", totalresults.domainsTested),
-				fmt.Sprintf("%.2f%%", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
-				fmt.Sprintf("%.2f%%", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100),
-				fmt.Sprintf("%.2f%%", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)},
-		}
-		if os.IsNotExist(err) {
-			log.Println(checkFile)
-			file, err := os.Create(filepathexport)
-			if err != nil {
-				fmt.Println(err.Error())
+			totalresults := fileEntry(filepath, numWorkers)
+			dataHead := [][]string{
+				{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
 			}
+
+			data := [][]string{
+				{time.Now().Format("2006-01-02 15:04:05"),
+					fmt.Sprintf("%d", totalresults.domainsTested),
+					fmt.Sprintf("%.2f%%", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
+					fmt.Sprintf("%.2f%%", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100),
+					fmt.Sprintf("%.2f%%", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)},
+			}
+
+			if os.IsNotExist(err) {
+				log.Println(checkFile)
+				log.Println("it doesnt exist, making one NOW")
+				file, err := os.Create(fullresultdr)
+				if err != nil {
+					fmt.Println(err.Error())
+				}
+				writer := csv.NewWriter(file)
+
+				for _, x := range dataHead {
+					writer.Write(x)
+				}
+				writer.Flush()
+				file.Close()
+
+			}
+
+			file, err := os.OpenFile(fullresultdr, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
 			writer := csv.NewWriter(file)
 
-			for _, x := range dataHead {
-				writer.Write(x)
+			for _, value := range data {
+				writer.Write(value)
 			}
 			writer.Flush()
 			file.Close()
-
-			// writer.Write()
+			time.Sleep(time.Duration(timebetrun) * time.Second)
 		}
-
-		file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-
-		writer := csv.NewWriter(file)
-
-		for _, value := range data {
-			writer.Write(value)
-		}
-		writer.Flush()
-		file.Close()
-
-		/*
-			base csv file
-			increment when new data incoming
-			* If file already exist, only increment/change data not title
-		*/
-	} else if filepath != "" {
-
-		totalresults := fileEntry(filepath, numWorkers)
-		fmt.Printf("domains tested: %d\n", totalresults.domainsTested)
-		fmt.Printf("percent http/2: %.2f%%\n", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100)
-		fmt.Printf("percent http/1.1: %.2f%%\n", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100)
-		fmt.Printf("percent connection error: %.2f%%\n", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)
-		fmt.Printf("percent http1.1 error: %.2f%%\n", (float32(totalresults.errorhttp1occured)/float32(totalresults.http11enabled))*100)
-		fmt.Printf("percent http2 error: %.2f%%\n", (float32(totalresults.errorhttp2occured)/float32(totalresults.http2enabled))*100)
-	} else if urlInput != "" {
-		fmt.Println("in one right now")
-		websitepathHTTP2(urlInput)
 	}
 
 }
-
-/*
-	response.Body.Close()
-	-f : read file domains
-	-o : write to file csv
-
-*/
