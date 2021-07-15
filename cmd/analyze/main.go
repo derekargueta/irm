@@ -251,9 +251,7 @@ func main() {
 			file.Close()
 			fmt.Println("Done")
 
-			chrondir := maindr + "/cron.sh"
-			fmt.Println(chrondir)
-			cmd := exec.Command("/bin/sh", chrondir)
+			cmd := exec.Command("bash cron.sh")
 			cmd.Run()
 			time.Sleep(time.Duration(timebetrun) * time.Second)
 		}
