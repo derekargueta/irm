@@ -1,16 +1,16 @@
 package main
 
 import (
-	"io"
-	"io/ioutil"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
 
 type CommandArgs struct {
-	port int
+	port   int
 	webDir string
 }
 
@@ -21,7 +21,7 @@ func parseArgs() *CommandArgs {
 	flag.StringVar(&webDir, "web-dir", "web", "The directory from which files are served over HTTP.")
 	flag.Parse()
 	return &CommandArgs{
-		port: port,
+		port:   port,
 		webDir: webDir,
 	}
 }

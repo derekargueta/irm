@@ -28,8 +28,7 @@ func (h *HTTP1Probe) Run() *ProbeResult {
 
 	return &ProbeResult{
 		Supported: enabled,
-		Err: err,
-		Name: "HTTP/1.1 supported",
+		Err:       err,
+		Name:      "HTTP/1.1 supported",
 	}
 }
-

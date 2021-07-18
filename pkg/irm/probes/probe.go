@@ -2,7 +2,7 @@ package probes
 
 type ProbeResult struct {
 	Supported bool
-	Err				error
+	Err       error
 	Name      string
 }
 
