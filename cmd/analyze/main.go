@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/net/http2"
+	"github.com/derekargueta/irm/pkg/irm"
 )
 
 type TotalTestResult struct { //go data type
@@ -43,24 +43,6 @@ const (
 	http1xSupportMsgString = "✅ %s supports HTTP/1.1\n"
 	http10SupportMsgString = "✅ %s supports HTTP/1.0\n"
 )
-
-func sendHTTP1Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
-
-	// TLS is required for public HTTP/2 services, so assume `https`.
-	request, _ := http.NewRequest("GET", "https://"+domain, nil)
-	request.Close = true
-	return client.Do(request)
-}
-
-func sendHTTP2Request(domain string) (*http.Response, error) {
-	client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
-
-	// TLS is required for public HTTP/2 services, so assume `https`.
-	request, _ := http.NewRequest("GET", "https://"+domain, nil)
-	request.Close = true
-	return client.Do(request)
-}
 
 func worker(input chan string, output chan ProbeResult) {
 	for x := range input {
@@ -133,7 +115,7 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 
 func filepathHTTP(myURL string) ProbeResult {
 	result := ProbeResult{}
-	response, err := sendHTTP2Request(myURL)
+	response, err := irm.SendHTTP2Request(myURL)
 
 	if response != nil {
 		response.Body.Close()
@@ -150,7 +132,7 @@ func filepathHTTP(myURL string) ProbeResult {
 
 	}
 
-	response1, err1 := sendHTTP1Request(myURL)
+	response1, err1 := irm.SendHTTP1Request(myURL)
 	if response1 != nil {
 		response1.Body.Close()
 	}
@@ -166,7 +148,7 @@ func filepathHTTP(myURL string) ProbeResult {
 
 func websitepathHTTP2(urlInput string) {
 	time.Sleep(100 * time.Millisecond)
-	response, err := sendHTTP2Request(urlInput)
+	response, err := irm.SendHTTP2Request(urlInput)
 
 	if response != nil {
 		response.Body.Close()
