@@ -7,6 +7,10 @@ import (
 	"golang.org/x/net/http2"
 )
 
+/*
+ * HTTP utility stuff.
+ */
+
 func SendHTTP1Request(domain string) (*http.Response, error) {
 	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
 

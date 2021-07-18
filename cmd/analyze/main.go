@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/derekargueta/irm/pkg/irm"
+	"github.com/derekargueta/irm/pkg/irm/probes"
 )
 
 type TotalTestResult struct { //go data type
@@ -132,16 +133,9 @@ func filepathHTTP(myURL string) ProbeResult {
 
 	}
 
-	response1, err1 := irm.SendHTTP1Request(myURL)
-	if response1 != nil {
-		response1.Body.Close()
-	}
-	if err1 == nil {
-		result.http11enabled = true
-	} else {
-		log.Println(err1.Error() + " by http1.1 request")
-		result.errorhttp1occured = true
-	}
+	http1Result := (&probes.HTTP1Probe{Domain: myURL}).Run()
+	result.errorhttp1occured = http1Result.Err != nil
+	result.http11enabled = http1Result.Supported
 
 	return result
 }
