@@ -116,22 +116,10 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 
 func filepathHTTP(myURL string) ProbeResult {
 	result := ProbeResult{}
-	response, err := irm.SendHTTP2Request(myURL)
 
-	if response != nil {
-		response.Body.Close()
-	}
-
-	if err == nil { //if http2 request returns error
-		result.http2enabled = true
-	} else {
-		errOtherThanHTTP2Support := !strings.Contains(err.Error(), "unexpected ALPN protocol")
-		if errOtherThanHTTP2Support {
-			log.Println(err.Error() + " - request error for http2")
-			result.errorhttp2occured = true
-		}
-
-	}
+	http2Result := (&probes.HTTP2Probe{}).Run(myURL)
+	result.errorhttp2occured = http2Result.Err != nil
+	result.http2enabled = http2Result.Supported
 
 	http1Result := (&probes.HTTP11Probe{}).Run(myURL)
 	result.errorhttp1occured = http1Result.Err != nil

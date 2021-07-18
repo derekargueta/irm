@@ -10,7 +10,7 @@ import (
  * Checks if the domain supports HTTP/1.1.
  */
 
-type HTTP11Probe struct {}
+type HTTP11Probe struct{}
 
 func (h *HTTP11Probe) Run(domain string) *ProbeResult {
 	enabled := false
