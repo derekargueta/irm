@@ -15,6 +15,7 @@ import (
 
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
+	"github.com/derekargueta/irm/pkg/util"
 )
 
 type TotalTestResult struct { //go data type
@@ -179,12 +180,13 @@ func main() {
 				{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
 			}
 
+			domainsTested := totalresults.domainsTested
 			data := [][]string{
 				{time.Now().Format("2006-01-02 15:04:05"),
 					fmt.Sprintf("%d", totalresults.domainsTested),
-					fmt.Sprintf("%.2f%%", (float32(totalresults.http2enabled)/float32(totalresults.domainsTested))*100),
-					fmt.Sprintf("%.2f%%", (float32(totalresults.http11enabled)/float32(totalresults.domainsTested))*100),
-					fmt.Sprintf("%.2f%%", (float32(totalresults.erroroccured)/float32(totalresults.domainsTested))*100)},
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested))},
 			}
 
 			if os.IsNotExist(err) {
