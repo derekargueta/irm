@@ -10,11 +10,11 @@ import (
  * Checks if the domain supports HTTP/1.1.
  */
 
-type HTTP1Probe struct {
+type HTTP11Probe struct {
 	Domain string
 }
 
-func (h *HTTP1Probe) Run() *ProbeResult {
+func (h *HTTP11Probe) Run() *ProbeResult {
 	enabled := false
 	response1, err := irm.SendHTTP1Request(h.Domain)
 	if response1 != nil {
