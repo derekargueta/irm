@@ -95,6 +95,7 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 		if result.errorhttp1occured {
 			totalresults.errorhttp1occured += 1
 		}
+
 		if result.errorhttp2occured {
 			totalresults.errorhttp2occured += 1
 		}
@@ -106,6 +107,7 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 		if result.http11enabled {
 			totalresults.http11enabled += 1
 		}
+
 		if count == resultCount {
 			close(results)
 		}
@@ -130,11 +132,12 @@ func filepathHTTP(myURL string) ProbeResult {
 
 func websitepathHTTP2(urlInput string) {
 	time.Sleep(100 * time.Millisecond)
-	response, err := irm.SendHTTP2Request(urlInput)
 
+	response, err := irm.SendHTTP2Request(urlInput)
 	if response != nil {
 		response.Body.Close()
 	}
+
 	if err != nil {
 		fmt.Printf(http2NoSupportMsgString, urlInput)
 	} else {
@@ -168,7 +171,7 @@ func main() {
 	checkFile, err := os.Stat(fullresultdr)
 
 	if filepath != "" {
-		for x := 0; x > -1; x++ {
+		for {
 			fmt.Println("in both right now")
 
 			totalresults := fileEntry(filepath, numWorkers)
@@ -187,18 +190,19 @@ func main() {
 			if os.IsNotExist(err) {
 				log.Println(checkFile)
 				log.Println("it doesnt exist, making one NOW")
+
 				file, err := os.Create(fullresultdr)
 				if err != nil {
 					fmt.Println(err.Error())
 				}
-				writer := csv.NewWriter(file)
 
+				writer := csv.NewWriter(file)
 				for _, x := range dataHead {
 					writer.Write(x)
 				}
+
 				writer.Flush()
 				file.Close()
-
 			}
 
 			file, err := os.OpenFile(fullresultdr, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)

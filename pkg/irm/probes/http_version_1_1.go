@@ -14,10 +14,12 @@ type HTTP11Probe struct{}
 
 func (h *HTTP11Probe) Run(domain string) *ProbeResult {
 	enabled := false
-	response1, err := irm.SendHTTP1Request(domain)
-	if response1 != nil {
-		response1.Body.Close()
+
+	response, err := irm.SendHTTP1Request(domain)
+	if response != nil {
+		response.Body.Close()
 	}
+
 	if err == nil {
 		enabled = true
 	} else {

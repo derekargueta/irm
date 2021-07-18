@@ -14,8 +14,8 @@ type HTTP2Probe struct{}
 
 func (h *HTTP2Probe) Run(domain string) *ProbeResult {
 	enabled := false
-	response, err := irm.SendHTTP2Request(domain)
 
+	response, err := irm.SendHTTP2Request(domain)
 	if response != nil {
 		response.Body.Close()
 	}
