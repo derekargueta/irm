@@ -133,7 +133,7 @@ func filepathHTTP(myURL string) ProbeResult {
 
 	}
 
-	http1Result := (&probes.HTTP11Probe{Domain: myURL}).Run()
+	http1Result := (&probes.HTTP11Probe{}).Run(myURL)
 	result.errorhttp1occured = http1Result.Err != nil
 	result.http11enabled = http1Result.Supported
 

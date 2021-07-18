@@ -7,5 +7,5 @@ type ProbeResult struct {
 }
 
 type Probe interface {
-	Run() *ProbeResult
+	Run(string) *ProbeResult
 }
