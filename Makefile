@@ -1,4 +1,4 @@
-all: build-docker cron-docker
+all: build-docker run-docker
 
 build-docker:
 	docker build -t irm .

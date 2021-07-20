@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"runtime"
 	"strings"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
 	"github.com/derekargueta/irm/pkg/util"
+	"github.com/go-git/go-git/v5"
 )
 
 type TotalTestResult struct { //go data type
@@ -65,7 +65,7 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 	results := make(chan ProbeResult, 1000000)
 
 	if erroropen != nil {
-		log.Fatal(erroropen)
+		log.Println(erroropen)
 		os.Exit(1)
 	}
 
@@ -166,10 +166,24 @@ func main() {
 
 	maindr, merr := os.Getwd()
 	if merr != nil {
-		log.Fatal(merr)
+		log.Println(merr)
 	}
 	fullresultdr := strings.Replace(maindr, "\\", "/", -1) + "/cmd/analyze/results/results.csv"
 	checkFile, err := os.Stat(fullresultdr)
+
+	if err != nil {
+		log.Printf("broke: %s", err)
+	}
+	repo, err := git.PlainClone("/Users/Macintosh_HD/Desktop/irm-repo", false, &git.CloneOptions{
+		URL:      "https://github.com/derekargueta/irm-data",
+		Progress: os.Stdout,
+	})
+	tree, err := repo.Worktree()
+	tree.Add("/Users/Macintosh_HD/Desktop/irm-repo")
+	tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{})
+	err = repo.Push(&git.PushOptions{
+		RemoteName: "origin",
+	})
 
 	if filepath != "" {
 		for {
@@ -209,7 +223,7 @@ func main() {
 
 			file, err := os.OpenFile(fullresultdr, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 			if err != nil {
-				log.Fatal(err.Error())
+				log.Println(err.Error())
 			}
 
 			writer := csv.NewWriter(file)
@@ -221,8 +235,6 @@ func main() {
 			file.Close()
 			fmt.Println("Done")
 
-			cmd := exec.Command("bash cron.sh")
-			cmd.Run()
 			time.Sleep(time.Duration(timebetrun) * time.Second)
 		}
 	}
