@@ -6,16 +6,18 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
+
+	// "net/http"
 	"os"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
 	"github.com/derekargueta/irm/pkg/util"
+	"github.com/go-git/go-git/plumbing/transport/ssh"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
 type TotalTestResult struct { //go data type
@@ -148,7 +150,7 @@ func websitepathHTTP2(urlInput string) {
 
 func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
-	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
+	// http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
 
 	var filepath string
 	// var urlInput string
@@ -164,79 +166,137 @@ func main() {
 
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
 
-	maindr, merr := os.Getwd()
-	if merr != nil {
-		log.Println(merr)
-	}
-	fullresultdr := strings.Replace(maindr, "\\", "/", -1) + "/cmd/analyze/results/results.csv"
-	checkFile, err := os.Stat(fullresultdr)
+	// maindr, merr := os.Getwd()
+	// if merr != nil {
+	// 	log.Println(merr)
+	// }
+	//fullresultdr := strings.Replace(maindr, "\\", "/", -1) + "/cmd/analyze/results/results.csv"
+	// checkFile, err := os.Stat(fullresultdr)
+	// if err != nil {
+	// 	log.Printf("broke: %s", err)
+	// }
 
-	if err != nil {
-		log.Printf("broke: %s", err)
-	}
-	repo, err := git.PlainClone("/Users/Macintosh_HD/Desktop/irm-repo", false, &git.CloneOptions{
-		URL:      "https://github.com/derekargueta/irm-data",
-		Progress: os.Stdout,
-	})
-	tree, err := repo.Worktree()
-	tree.Add("/Users/Macintosh_HD/Desktop/irm-repo")
-	tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{})
-	err = repo.Push(&git.PushOptions{
-		RemoteName: "origin",
-	})
+	// if err != nil {
+	// 	log.Printf("%s: this happened", err)
+	// }
 
 	if filepath != "" {
-		for {
-			fmt.Println("in both right now")
+		fmt.Println("in both right now")
 
-			totalresults := fileEntry(filepath, numWorkers)
-			dataHead := [][]string{
-				{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
-			}
+		totalresults := fileEntry(filepath, numWorkers)
+		// dataHead := [][]string{
+		// 	{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
+		// }
 
-			domainsTested := totalresults.domainsTested
-			data := [][]string{
-				{time.Now().Format("2006-01-02 15:04:05"),
-					fmt.Sprintf("%d", totalresults.domainsTested),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested))},
-			}
-
-			if os.IsNotExist(err) {
-				log.Println(checkFile)
-				log.Println("it doesnt exist, making one NOW")
-
-				file, err := os.Create(fullresultdr)
-				if err != nil {
-					fmt.Println(err.Error())
-				}
-
-				writer := csv.NewWriter(file)
-				for _, x := range dataHead {
-					writer.Write(x)
-				}
-
-				writer.Flush()
-				file.Close()
-			}
-
-			file, err := os.OpenFile(fullresultdr, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-			if err != nil {
-				log.Println(err.Error())
-			}
-
-			writer := csv.NewWriter(file)
-
-			for _, value := range data {
-				writer.Write(value)
-			}
-			writer.Flush()
-			file.Close()
-			fmt.Println("Done")
-
-			time.Sleep(time.Duration(timebetrun) * time.Second)
+		domainsTested := totalresults.domainsTested
+		data := [][]string{
+			{time.Now().Format("2006-01-02 15:04:05"),
+				fmt.Sprintf("%d", totalresults.domainsTested),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested))},
 		}
+
+		// if os.IsNotExist(err) {
+		// 	log.Println(checkFile)
+		// 	log.Println("it doesnt exist, making one NOW")
+
+		// 	file, err := os.Create(fullresultdr)
+		// 	if err != nil {
+		// 		fmt.Println(err.Error())
+		// 	}
+
+		// 	writer := csv.NewWriter(file)
+		// 	for _, x := range dataHead {
+		// 		writer.Write(x)
+		// 	}
+
+		// 	writer.Flush()
+		// 	file.Close()
+		// }
+		publicKeys, err := ssh.NewPublicKeysFromFile("git", "/root/", "")
+		if err != nil {
+			log.Printf("generate publickeys failed: %s\n", err.Error())
+		}
+		checkFile, err := os.Open("/root/irm-data/results.csv")
+
+		/*
+			SSH AUTHENTICATION
+
+		*/
+
+		if err != nil {
+			_, plainerr := git.PlainClone("/root/irm-data", false, &git.CloneOptions{
+				Auth:     publicKeys,
+				URL:      "git@github.com:derekargueta/irm-data.git",
+				Progress: os.Stdout,
+			})
+
+			if plainerr != nil {
+				log.Printf("cant clone : %s", plainerr)
+			}
+		}
+
+		/*
+			TOKEN AUTHENTICATION
+
+		*/
+		// token :=
+		// if err != nil {
+		// 	_, plainerr := git.PlainClone("/Users/Tavo/Desktop/irm-data", false, &git.CloneOptions{
+		// 		Auth: &http.BasicAuth{
+		// 			Username: "abc123",
+		// 			Password: token,
+		// 		},
+		// 		URL:      "git@github.com:derekargueta/irm-data.git",
+		// 		Progress: os.Stdout,
+		// 	})
+
+		// 	if plainerr != nil {
+		// 		log.Printf("cant clone : %s", plainerr)
+		// 	}
+		// }
+
+		checkFile.Close()
+
+		file, err := os.OpenFile("/root/irm-data/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			log.Println(err.Error())
+		}
+
+		writer := csv.NewWriter(file)
+
+		for _, value := range data {
+			writer.Write(value)
+		}
+		writer.Flush()
+		file.Close()
+		fmt.Println("Done")
+
+		repo, mrr := git.PlainOpen("/root/irm-data")
+
+		if mrr != nil {
+			log.Println("can't open")
+		}
+		tree, mmrr := repo.Worktree()
+		if mmrr != nil {
+			log.Println(err)
+		}
+
+		_, treeerr := tree.Add("results.csv")
+
+		if treeerr != nil {
+			log.Println("couldnt add to git")
+		} else {
+			tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{})
+			err = repo.Push(&git.PushOptions{
+				Auth: publicKeys,
+			})
+			log.Printf("error here right here: %s", err)
+		}
+
+		time.Sleep(time.Duration(timebetrun) * time.Second)
+
 	}
 
 }
