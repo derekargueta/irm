@@ -15,7 +15,6 @@ import (
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
 	"github.com/derekargueta/irm/pkg/util"
-	"github.com/go-git/go-git/plumbing/transport/ssh"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
@@ -214,7 +213,7 @@ func main() {
 		// 	writer.Flush()
 		// 	file.Close()
 		// }
-		publicKeys, err := ssh.NewPublicKeysFromFile("git", "/root/", "")
+		publicKeys, err := ssh.NewPublicKeysFromFile("git", "/root/SSH_Key/id_ed25519", "")
 		if err != nil {
 			log.Printf("generate publickeys failed: %s\n", err.Error())
 		}
