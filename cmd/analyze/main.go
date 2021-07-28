@@ -152,41 +152,23 @@ func main() {
 	// http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
 
 	var filepath string
-	// var urlInput string
 	var filepathexport string
 	var numWorkers int
 	var timebetrun int
-	// urlInput = os.Args[1]
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
 	flag.IntVar(&timebetrun, "d", 10, "time between runs")
 	flag.Parse()
-
+	mainPath := "app/"
+	//"/root/"
+	// "/Users/Tavo"
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
-
-	// maindr, merr := os.Getwd()
-	// if merr != nil {
-	// 	log.Println(merr)
-	// }
-	//fullresultdr := strings.Replace(maindr, "\\", "/", -1) + "/cmd/analyze/results/results.csv"
-	// checkFile, err := os.Stat(fullresultdr)
-	// if err != nil {
-	// 	log.Printf("broke: %s", err)
-	// }
-
-	// if err != nil {
-	// 	log.Printf("%s: this happened", err)
-	// }
 
 	if filepath != "" {
 		fmt.Println("in both right now")
 
 		totalresults := fileEntry(filepath, numWorkers)
-		// dataHead := [][]string{
-		// 	{"time stamp", "Domain tested", "percent http2", "percent http1.1", "percent connection error: "},
-		// }
-
 		domainsTested := totalresults.domainsTested
 		data := [][]string{
 			{time.Now().Format("2006-01-02 15:04:05"),
@@ -195,37 +177,17 @@ func main() {
 				fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
 				fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested))},
 		}
-
-		// if os.IsNotExist(err) {
-		// 	log.Println(checkFile)
-		// 	log.Println("it doesnt exist, making one NOW")
-
-		// 	file, err := os.Create(fullresultdr)
-		// 	if err != nil {
-		// 		fmt.Println(err.Error())
-		// 	}
-
-		// 	writer := csv.NewWriter(file)
-		// 	for _, x := range dataHead {
-		// 		writer.Write(x)
-		// 	}
-
-		// 	writer.Flush()
-		// 	file.Close()
-		// }
-		publicKeys, err := ssh.NewPublicKeysFromFile("git", "/root/SSH_Key/id_ed25519", "")
+		publicKeys, err := ssh.NewPublicKeysFromFile("git", mainPath+"id_ed25519", "") //WILL FAIL IN DOCKER
 		if err != nil {
 			log.Printf("generate publickeys failed: %s\n", err.Error())
 		}
-		checkFile, err := os.Open("/root/irm-data/results.csv")
-
+		checkFile, err := os.Open(mainPath + "tempirmdata")
 		/*
 			SSH AUTHENTICATION
 
 		*/
-
 		if err != nil {
-			_, plainerr := git.PlainClone("/root/irm-data", false, &git.CloneOptions{
+			_, plainerr := git.PlainClone(mainPath+"tempirmdata", false, &git.CloneOptions{
 				Auth:     publicKeys,
 				URL:      "git@github.com:derekargueta/irm-data.git",
 				Progress: os.Stdout,
@@ -235,30 +197,9 @@ func main() {
 				log.Printf("cant clone : %s", plainerr)
 			}
 		}
-
-		/*
-			TOKEN AUTHENTICATION
-
-		*/
-		// token :=
-		// if err != nil {
-		// 	_, plainerr := git.PlainClone("/Users/Tavo/Desktop/irm-data", false, &git.CloneOptions{
-		// 		Auth: &http.BasicAuth{
-		// 			Username: "abc123",
-		// 			Password: token,
-		// 		},
-		// 		URL:      "git@github.com:derekargueta/irm-data.git",
-		// 		Progress: os.Stdout,
-		// 	})
-
-		// 	if plainerr != nil {
-		// 		log.Printf("cant clone : %s", plainerr)
-		// 	}
-		// }
-
 		checkFile.Close()
 
-		file, err := os.OpenFile("/root/irm-data/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+		file, err := os.OpenFile(mainPath+"/cmd/analyze/results/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		if err != nil {
 			log.Println(err.Error())
 		}
@@ -272,7 +213,7 @@ func main() {
 		file.Close()
 		fmt.Println("Done")
 
-		repo, mrr := git.PlainOpen("/root/irm-data")
+		repo, mrr := git.PlainOpen(mainPath + "tempirmdata")
 
 		if mrr != nil {
 			log.Println("can't open")
