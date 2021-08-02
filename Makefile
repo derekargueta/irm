@@ -7,4 +7,4 @@ run-docker:
 	docker run -it irm
 
 cron-docker:
-	docker run -it -v irm
+	docker run -it irm
