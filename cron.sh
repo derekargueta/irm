@@ -1,2 +1,2 @@
-#!/bin/sh
-echo yes
+#!/bin/bash
+echo "hello"

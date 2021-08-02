@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os/exec"
 
 	// "net/http"
 	"os"
@@ -167,6 +168,10 @@ func main() {
 	// "/Users/Tavo"
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
 
+	workingdir, err := os.Getwd()
+	if err != nil {
+		log.Println("no working directory")
+	}
 	if filepath != "" {
 		fmt.Println("in both right now")
 
@@ -184,8 +189,9 @@ func main() {
 			TOKEN AUTHENTICATION
 
 		*/
+
 		// if err != nil {
-		_, plainerr := git.PlainClone("./tempirmdata/irm-data", false, &git.CloneOptions{
+		_, plainerr := git.PlainClone(workingdir+"tempirmdata/irm-data", false, &git.CloneOptions{
 			Auth: &http.BasicAuth{
 				Username: "123",
 				Password: password,
@@ -199,9 +205,8 @@ func main() {
 			log.Printf("cant clone : %s", plainerr)
 		}
 		// }
-		// checkFile.Close()
 
-		file, err := os.OpenFile("./tempirmdata/irm-data/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+		file, err := os.OpenFile(workingdir+"/tempirmdata/irm-data/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
 		if err != nil {
 			log.Println(err.Error() + "cant open results in tempirmdata")
 		}
@@ -217,7 +222,7 @@ func main() {
 		file.Close()
 		fmt.Println("Done")
 
-		repo, mrr := git.PlainOpen("./tempirmdata/irm-data") //       path 4
+		repo, mrr := git.PlainOpen(workingdir + "/tempirmdata/irm-data") //       path 4
 
 		if mrr != nil {
 			log.Println("can't open")
@@ -241,7 +246,9 @@ func main() {
 			})
 			log.Printf("errors that happened: %s", err)
 		}
-
+		cmd, err := exec.Command("./cron.sh").CombinedOutput()
+		log.Println(string(cmd))
+		// log.Printf("error: %s", cmd.Run().Error())
 		time.Sleep(time.Duration(timebetrun) * time.Second)
 
 	}
