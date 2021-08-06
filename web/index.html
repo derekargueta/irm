@@ -2,6 +2,37 @@
   <head>
   </head>
   <body>
-    <p>hi, the name's deez</p>
+    <div>
+      <canvas id="myChart">
+    </div>
   </body>
+ 
+
+
+  </canvas>
 </html>
+
+<script>
+  async function fetchData() {
+    await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
+    .then(Response => Response.text())
+    .then (data => {
+
+      let vals = data.split('\n'), jsondata = [];
+      for( let i = 1; i < vals.length-1; i++ ){
+      let row = vals[i].split(',');
+      jsondata.push({
+      
+          timestapmp : row[0],
+          domaintest : row[1],
+          http2 : row[2],
+          http11 : row[3],
+          connectionerror : row[4]
+      });
+    }
+    console.log(jsondata)
+    });
+    
+}
+fetchData()  
+</script> 
