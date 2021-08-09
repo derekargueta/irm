@@ -3,36 +3,107 @@
   </head>
   <body>
     <div>
-      <canvas id="myChart">
+      <canvas id="Chart1"></canvas>
+      <canvas id="Chart2"> </canvas>
+    </div>
+
+    <div >
+
     </div>
   </body>
  
 
 
-  </canvas>
+ 
 </html>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  async function fetchData() {
-    await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
-    .then(Response => Response.text())
-    .then (data => {
+function chart(mydata, mylabels, mainlabel,chartID)
+{
+  var ctx = document.getElementById(chartID).getContext('2d');
+  var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: mylabels,
+        datasets: [{
+            label: mainlabel,
+            data: mydata,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+}
 
-      let vals = data.split('\n'), jsondata = [];
-      for( let i = 1; i < vals.length-1; i++ ){
-      let row = vals[i].split(',');
-      jsondata.push({
-      
-          timestapmp : row[0],
-          domaintest : row[1],
-          http2 : row[2],
-          http11 : row[3],
-          connectionerror : row[4]
+
+  async function fetchData() {
+    var jsondata = [];
+    let response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
+    
+    let data = await response.text()
+    let vals = data.split('\n')
+    for( let i = 1; i < vals.length-1; i++ ){
+    let row = vals[i].split(',');
+    jsondata.push(
+    {
+        timestapmp : row[0],
+        domaintest : row[1],
+        http2 : row[2],
+        http11 : row[3],
       });
     }
-    console.log(jsondata)
-    });
+
+
+
+
+
+
+    let timelabel = []
     
-}
-fetchData()  
+    let http11 = []
+    for(let i = 0; i < 50; i++)
+    {
+      timelabel.push(jsondata[i].timestapmp)
+      http11.push(jsondata[i].http11.replace("%",""))
+    }
+
+    chart(http11,timelabel,"% of HTTP1.1 Websites","Chart1")
+
+
+    let http2 = []
+    for(let i = 0; i < 50; i++)
+    {
+      http2.push(jsondata[i].http2.replace("%",""))
+    }
+  
+    chart(http2,timelabel,"% of HTTP2 Websites","Chart2")
+
+  }
+
+  
+
+
+  fetchData()
 </script> 
