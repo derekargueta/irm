@@ -181,7 +181,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
 					fmt.Sprintf("%.2fs", time.Since(timer).Seconds()),
 				}}
-
+			//added timer
 			//          TOKEN AUTHENTICATION
 
 			/*
