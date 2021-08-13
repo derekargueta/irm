@@ -167,12 +167,10 @@ func main() {
 	// "/Users/Tavo"
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
 
-	timer := time.Now()
-
 	for {
 		if filepath != "" {
 			fmt.Println("in both right now")
-
+			timer := time.Now()
 			totalresults := fileEntry(filepath, numWorkers)
 			domainsTested := totalresults.domainsTested
 			data := [][]string{
@@ -181,7 +179,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
-					fmt.Sprintf("%.2s", time.Since(timer)),
+					fmt.Sprintf("%.2fs", time.Since(timer).Seconds()),
 				}}
 
 			//          TOKEN AUTHENTICATION
