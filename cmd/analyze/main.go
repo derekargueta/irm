@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 
 	// "net/http"
 	"os"
@@ -150,7 +151,7 @@ func websitepathHTTP2(urlInput string) {
 
 func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
-	// http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
+	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
 
 	var filepath string
 	var filepathexport string
@@ -165,6 +166,9 @@ func main() {
 	//"/root/"
 	// "/Users/Tavo"
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
+
+	timer := time.Now()
+
 	for {
 		if filepath != "" {
 			fmt.Println("in both right now")
@@ -176,8 +180,9 @@ func main() {
 					fmt.Sprintf("%d", totalresults.domainsTested),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested))},
-			}
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
+					fmt.Sprintf("%.2s", time.Since(timer)),
+				}}
 
 			//          TOKEN AUTHENTICATION
 
@@ -231,7 +236,7 @@ func main() {
 			file.Close()
 			fmt.Println("Done")
 
-			//       path 4
+			//       patck this value over time.h 4
 			repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
 			if mrr != nil {
 				log.Println("cant open dir")
