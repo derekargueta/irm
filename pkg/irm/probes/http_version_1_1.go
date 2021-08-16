@@ -15,7 +15,7 @@ type HTTP11Probe struct{}
 func (h *HTTP11Probe) Run(domain string) *ProbeResult {
 	enabled := false
 
-	response, err := irm.SendHTTP1Request(domain)
+	response, err := irm.SendHTTP1Request(domain, "https://")
 	if response != nil {
 		response.Body.Close()
 	}
@@ -23,7 +23,18 @@ func (h *HTTP11Probe) Run(domain string) *ProbeResult {
 	if err == nil {
 		enabled = true
 	} else {
-		log.Println(err.Error() + " by http1.1 request")
+
+		response, err := irm.SendHTTP1Request(domain, "http://")
+		if response != nil {
+			response.Body.Close()
+		}
+
+		if err == nil {
+			enabled = true
+		} else {
+			log.Println(err.Error() + " by http1.1 request")
+		}
+
 	}
 
 	return &ProbeResult{

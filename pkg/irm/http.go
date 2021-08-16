@@ -11,11 +11,11 @@ import (
  * HTTP utility stuff.
  */
 
-func SendHTTP1Request(domain string) (*http.Response, error) {
+func SendHTTP1Request(domain string, http_str string) (*http.Response, error) {
 	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
 
 	// TODO(derekargueta): if TLS fails, try HTTP/1 without TLS.
-	request, _ := http.NewRequest("GET", "https://"+domain, nil)
+	request, _ := http.NewRequest("GET", http_str+domain, nil)
 	request.Close = true
 	return client.Do(request)
 }
