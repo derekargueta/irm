@@ -17,7 +17,6 @@ import (
 	"github.com/derekargueta/irm/pkg/irm/probes"
 	"github.com/derekargueta/irm/pkg/util"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
@@ -216,7 +215,6 @@ func main() {
 				}
 			}
 			checkFile.Close()
-			// }
 
 			file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
 			if err != nil {
@@ -235,40 +233,41 @@ func main() {
 			fmt.Println("Done")
 
 			//       patck this value over time.h 4
-			repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
-			if mrr != nil {
-				log.Println("cant open dir")
-			}
-			tree, mmrr := repo.Worktree()
-			fmt.Println(tree.Status())
-			if mmrr != nil {
-				log.Println(err)
-			}
+			// 	repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
+			// 	if mrr != nil {
+			// 		log.Println("cant open dir")
+			// 	}
+			// 	tree, mmrr := repo.Worktree()
+			// 	fmt.Println(tree.Status())
+			// 	if mmrr != nil {
+			// 		log.Println(err)
+			// 	}
 
-			_, err = tree.Add("results.csv")
-			if err != nil {
-				log.Println("doesn't exists")
-			} else {
-				log.Println("exists")
-			}
-			_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
-				Author: &object.Signature{
-					Name:  "H",
-					Email: "t",
-					When:  time.Now(),
-				},
-			})
-			if err != nil {
-				log.Println("commit not workig properly")
-			}
-			mrr = repo.Push(&git.PushOptions{
-				RemoteName: "origin",
-				Auth:       publicKeys,
-			})
-			log.Printf("errors that happened: %s", mrr)
+			// 	_, err = tree.Add("results.csv")
+			// 	if err != nil {
+			// 		log.Println("doesn't exists")
+			// 	} else {
+			// 		log.Println("exists")
+			// 	}
+			// 	_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
+			// 		Author: &object.Signature{
+			// 			Name:  "H",
+			// 			Email: "t",
+			// 			When:  time.Now(),
+			// 		},
+			// 	})
+			// 	if err != nil {
+			// 		log.Println("commit not workig properly")
+			// 	}
+			// 	mrr = repo.Push(&git.PushOptions{
+			// 		RemoteName: "origin",
+			// 		Auth:       publicKeys,
+			// 	})
+			// 	log.Printf("errors that happened: %s", mrr)
 
+			// }
+			// time.Sleep(time.Duration(timebetrun) * time.Second)
 		}
-		time.Sleep(time.Duration(timebetrun) * time.Second)
-	}
 
+	}
 }
