@@ -28,6 +28,7 @@ type TotalTestResult struct { //go data type
 	errorhttp1occured int
 	errorhttp2occured int
 	erroroccured      int
+	tcp1enabled       int
 }
 
 type ProbeResult struct {
@@ -36,6 +37,7 @@ type ProbeResult struct {
 	http10enabled     bool
 	errorhttp1occured bool
 	errorhttp2occured bool
+	tcp1enabled       bool
 }
 
 const (
@@ -111,6 +113,10 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 			totalresults.http11enabled += 1
 		}
 
+		if result.tcp1enabled {
+			totalresults.tcp1enabled += 1
+		}
+
 		if count == resultCount {
 			close(results)
 		}
@@ -130,6 +136,9 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.errorhttp1occured = http1Result.Err != nil
 	result.http11enabled = http1Result.Supported
 
+	tcp1Result := (&probes.tcp1probe{}).Run(myURL)
+	result.tcp1enabled = tcp1Result.Err != nil
+	result.tcp1enabled = tcp1Result.Supported
 	return result
 }
 
