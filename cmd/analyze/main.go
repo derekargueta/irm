@@ -136,7 +136,7 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.errorhttp1occured = http1Result.Err != nil
 	result.http11enabled = http1Result.Supported
 
-	tcp1Result := (&probes.tcp1probe{}).Run(myURL)
+	tcp1Result := (&probes.TCP1{}).Run(myURL)
 	result.tcp1enabled = tcp1Result.Err != nil
 	result.tcp1enabled = tcp1Result.Supported
 	return result
@@ -188,6 +188,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
 					fmt.Sprintf("%.2fs", time.Since(timer).Seconds()),
+					fmt.Sprintf("%.2fs", util.Percent(totalresults.tcp1enabled, domainsTested)),
 				}}
 			//added timer
 			//          TOKEN AUTHENTICATION
