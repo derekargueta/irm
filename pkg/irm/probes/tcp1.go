@@ -14,7 +14,7 @@ type TCP1 struct{}
 func (h *TCP1) Run(domain string) *ProbeResult {
 	enabled := false
 
-	response, err := irm.SendTCP1Request(domain)
+	response, err := irm.SendTLS1Request(domain)
 	if response != nil {
 		response.Body.Close()
 	}

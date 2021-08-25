@@ -33,8 +33,8 @@ func SendHTTP2Request(domain string) (*http.Response, error) {
 	return client.Do(request)
 }
 
-func SendTCP1Request(domain string) (*http.Response, error) {
-	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS10}
+func SendTLS1Request(domain string) (*http.Response, error) {
+	tlsConfig := &tls.Config{MaxVersion: tls.VersionTLS10}
 	//client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
 	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.

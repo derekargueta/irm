@@ -16,8 +16,6 @@ import (
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
 	"github.com/derekargueta/irm/pkg/util"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
 type TotalTestResult struct { //go data type
@@ -188,7 +186,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
 					fmt.Sprintf("%.2fs", time.Since(timer).Seconds()),
-					fmt.Sprintf("%.2fs", util.Percent(totalresults.tcp1enabled, domainsTested)),
+					fmt.Sprintf("%.2f", util.Percent(totalresults.tcp1enabled, domainsTested)),
 				}}
 			//added timer
 			//          TOKEN AUTHENTICATION
@@ -205,26 +203,26 @@ func main() {
 			*/
 
 			//	         SHH Authentication
-			os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
-			publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
-			if err != nil {
-				log.Printf("generate publickeys failed: %s\n", err.Error())
-			}
-			checkFile, err := os.Open("/app/tempirmdata/results.csv")
-			if err != nil {
-				_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
-					Auth:     publicKeys,
-					URL:      "git@github.com:derekargueta/irm-data.git",
-					Progress: os.Stdout,
-				})
+			// os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
+			// publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
+			// if err != nil {
+			// 	log.Printf("generate publickeys failed: %s\n", err.Error())
+			// }
+			// checkFile, err := os.Open("/app/tempirmdata/results.csv")
+			// if err != nil {
+			// 	_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
+			// 		Auth:     publicKeys,
+			// 		URL:      "git@github.com:derekargueta/irm-data.git",
+			// 		Progress: os.Stdout,
+			// 	})
 
-				log.Println("in process of cloning")
+			// 	log.Println("in process of cloning")
 
-				if plainerr != nil {
-					log.Printf("cant clone : %s", plainerr)
-				}
-			}
-			checkFile.Close()
+			// 	if plainerr != nil {
+			// 		log.Printf("cant clone : %s", plainerr)
+			// 	}
+			// }
+			// checkFile.Close()
 
 			file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
 			if err != nil {
