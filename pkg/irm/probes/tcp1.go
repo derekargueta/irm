@@ -22,7 +22,7 @@ func (h *TCP1) Run(domain string) *ProbeResult {
 	if err == nil {
 		enabled = true
 	} else {
-		log.Println("tcp1 failed")
+		log.Println(err, " tcp1 failed")
 	}
 
 	return &ProbeResult{
