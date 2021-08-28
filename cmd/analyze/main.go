@@ -16,6 +16,9 @@ import (
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
 	"github.com/derekargueta/irm/pkg/util"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
 type TotalTestResult struct { //go data type
@@ -26,7 +29,9 @@ type TotalTestResult struct { //go data type
 	errorhttp1occured int
 	errorhttp2occured int
 	erroroccured      int
-	tcp1enabled       int
+	tls10enabled      int
+	tls11enabled      int
+	tls12enabled      int
 }
 
 type ProbeResult struct {
@@ -35,7 +40,9 @@ type ProbeResult struct {
 	http10enabled     bool
 	errorhttp1occured bool
 	errorhttp2occured bool
-	tcp1enabled       bool
+	tls10enabled      bool
+	tls11enabled      bool
+	tls12enabled      bool
 }
 
 const (
@@ -111,8 +118,14 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 			totalresults.http11enabled += 1
 		}
 
-		if result.tcp1enabled {
-			totalresults.tcp1enabled += 1
+		if result.tls10enabled {
+			totalresults.tls10enabled += 1
+		}
+		if result.tls11enabled {
+			totalresults.tls11enabled += 1
+		}
+		if result.tls12enabled {
+			totalresults.tls12enabled += 1
 		}
 
 		if count == resultCount {
@@ -134,9 +147,18 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.errorhttp1occured = http1Result.Err != nil
 	result.http11enabled = http1Result.Supported
 
-	tcp1Result := (&probes.TCP1{}).Run(myURL)
-	result.tcp1enabled = tcp1Result.Err != nil
-	result.tcp1enabled = tcp1Result.Supported
+	TLS10Result := (&probes.TLS{}).Run(myURL, 0)
+	result.tls10enabled = TLS10Result.Err != nil
+	result.tls10enabled = TLS10Result.Supported
+
+	TLS11Result := (&probes.TLS{}).Run(myURL, 1)
+	result.tls11enabled = TLS11Result.Err != nil
+	result.tls11enabled = TLS11Result.Supported
+
+	TLS12Result := (&probes.TLS{}).Run(myURL, 2)
+	result.tls12enabled = TLS12Result.Err != nil
+	result.tls12enabled = TLS12Result.Supported
+
 	return result
 }
 
@@ -163,10 +185,12 @@ func main() {
 	var filepathexport string
 	var numWorkers int
 	var timebetrun int
+	var enableGit int
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
 	flag.IntVar(&timebetrun, "d", 10, "time between runs")
+	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
 	flag.Parse()
 	//mainPath := "app/"
 	//"/root/"
@@ -186,7 +210,9 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
 					fmt.Sprintf("%.2fs", time.Since(timer).Seconds()),
-					fmt.Sprintf("%.2f", util.Percent(totalresults.tcp1enabled, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls10enabled, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
 				}}
 			//added timer
 			//          TOKEN AUTHENTICATION
@@ -203,79 +229,98 @@ func main() {
 			*/
 
 			//	         SHH Authentication
-			// os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
-			// publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
-			// if err != nil {
-			// 	log.Printf("generate publickeys failed: %s\n", err.Error())
-			// }
-			// checkFile, err := os.Open("/app/tempirmdata/results.csv")
-			// if err != nil {
-			// 	_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
-			// 		Auth:     publicKeys,
-			// 		URL:      "git@github.com:derekargueta/irm-data.git",
-			// 		Progress: os.Stdout,
-			// 	})
 
-			// 	log.Println("in process of cloning")
+			if enableGit == 1 {
+				os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
+				publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
+				if err != nil {
+					log.Printf("generate publickeys failed: %s\n", err.Error())
+				}
+				checkFile, err := os.Open("/app/tempirmdata/results.csv")
+				if err != nil {
+					_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
+						Auth:     publicKeys,
+						URL:      "git@github.com:derekargueta/irm-data.git",
+						Progress: os.Stdout,
+					})
 
-			// 	if plainerr != nil {
-			// 		log.Printf("cant clone : %s", plainerr)
-			// 	}
-			// }
-			// checkFile.Close()
+					log.Println("in process of cloning")
 
-			file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
-			if err != nil {
-				log.Println(err.Error() + "cant open results in tempirmdata")
+					if plainerr != nil {
+						log.Printf("cant clone : %s", plainerr)
+					}
+				}
+				checkFile.Close()
+
+				file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+				if err != nil {
+					log.Println(err.Error() + "cant open results in tempirmdata")
+				}
+
+				writer := csv.NewWriter(file)
+
+				for _, value := range data {
+					writer.Write(value)
+					log.Println(value)
+				}
+				writer.Flush()
+				log.Println(writer.Error())
+				file.Close()
+				fmt.Println("Done")
+
+				//       patck this value over time.h 4
+				repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
+				if mrr != nil {
+					log.Println("cant open dir")
+				}
+				tree, mmrr := repo.Worktree()
+				fmt.Println(tree.Status())
+				if mmrr != nil {
+					log.Println(err)
+				}
+
+				_, err = tree.Add("results.csv")
+				if err != nil {
+					log.Println("doesn't exists")
+				} else {
+					log.Println("exists")
+				}
+				_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
+					Author: &object.Signature{
+						Name:  "H",
+						Email: "t",
+						When:  time.Now(),
+					},
+				})
+				if err != nil {
+					log.Println("commit not workig properly")
+				}
+				mrr = repo.Push(&git.PushOptions{
+					RemoteName: "origin",
+					Auth:       publicKeys,
+				})
+				log.Printf("errors that happened: %s", mrr)
+				time.Sleep(time.Duration(timebetrun) * time.Second)
+			} else {
+				file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+				if err != nil {
+					log.Println(err.Error() + "cant open results in tempirmdata")
+				}
+
+				writer := csv.NewWriter(file)
+
+				for _, value := range data {
+					writer.Write(value)
+					log.Println(value)
+				}
+				writer.Flush()
+				log.Println(writer.Error())
+				file.Close()
+				fmt.Println("Done")
 			}
 
-			writer := csv.NewWriter(file)
-
-			for _, value := range data {
-				writer.Write(value)
-				log.Println(value)
-			}
-			writer.Flush()
-			log.Println(writer.Error())
-			file.Close()
-			fmt.Println("Done")
-
-			//       patck this value over time.h 4
-			// 	repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
-			// 	if mrr != nil {
-			// 		log.Println("cant open dir")
-			// 	}
-			// 	tree, mmrr := repo.Worktree()
-			// 	fmt.Println(tree.Status())
-			// 	if mmrr != nil {
-			// 		log.Println(err)
-			// 	}
-
-			// 	_, err = tree.Add("results.csv")
-			// 	if err != nil {
-			// 		log.Println("doesn't exists")
-			// 	} else {
-			// 		log.Println("exists")
-			// 	}
-			// 	_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
-			// 		Author: &object.Signature{
-			// 			Name:  "H",
-			// 			Email: "t",
-			// 			When:  time.Now(),
-			// 		},
-			// 	})
-			// 	if err != nil {
-			// 		log.Println("commit not workig properly")
-			// 	}
-			// 	mrr = repo.Push(&git.PushOptions{
-			// 		RemoteName: "origin",
-			// 		Auth:       publicKeys,
-			// 	})
-			// 	log.Printf("errors that happened: %s", mrr)
-
-			// }
-			// time.Sleep(time.Duration(timebetrun) * time.Second)
 		}
 
 	}
+
 }
