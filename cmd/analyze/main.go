@@ -32,6 +32,7 @@ type TotalTestResult struct { //go data type
 	tls10enabled      int
 	tls11enabled      int
 	tls12enabled      int
+	tls13enabled      int
 }
 
 type ProbeResult struct {
@@ -43,6 +44,7 @@ type ProbeResult struct {
 	tls10enabled      bool
 	tls11enabled      bool
 	tls12enabled      bool
+	tls13enabled      bool
 }
 
 const (
@@ -127,6 +129,9 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 		if result.tls12enabled {
 			totalresults.tls12enabled += 1
 		}
+		if result.tls13enabled {
+			totalresults.tls13enabled += 1
+		}
 
 		if count == resultCount {
 			close(results)
@@ -159,6 +164,10 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.tls12enabled = TLS12Result.Err != nil
 	result.tls12enabled = TLS12Result.Supported
 
+	TLS13Result := (&probes.TLS{}).Run(myURL, 3)
+	result.tls13enabled = TLS13Result.Err != nil
+	result.tls13enabled = TLS13Result.Supported
+
 	return result
 }
 
@@ -186,11 +195,13 @@ func main() {
 	var numWorkers int
 	var timebetrun int
 	var enableGit int
+	var singleURL string
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
 	flag.IntVar(&timebetrun, "d", 10, "time between runs")
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
+	flag.StringVar(&singleURL, "url", "", "test single URL")
 	flag.Parse()
 	//mainPath := "app/"
 	//"/root/"
@@ -198,6 +209,11 @@ func main() {
 	log.Printf("Running with %d goroutine workers\n", numWorkers)
 
 	for {
+		if singleURL != "" {
+			test := filepathHTTP(singleURL)
+			log.Printf("http1.1: %t \n http1.2: %t \n TLS1.0: %t \n TLS1.1: %t \n TLS1.2: %t \n TLS1.3: %t", test.http11enabled, test.http11enabled, test.tls10enabled, test.tls11enabled, test.tls12enabled, test.tls13enabled)
+			break
+		}
 		if filepath != "" {
 			fmt.Println("in both right now")
 			timer := time.Now()
@@ -213,6 +229,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls10enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls13enabled, domainsTested)),
 				}}
 			//added timer
 			//          TOKEN AUTHENTICATION
@@ -317,6 +334,7 @@ func main() {
 				log.Println(writer.Error())
 				file.Close()
 				fmt.Println("Done")
+				break
 			}
 
 		}

@@ -73,6 +73,26 @@ func (h *TLS) Run(domain string, typeTLS int) *ProbeResult {
 			}
 		}
 
+	case 3:
+		{
+			response, err := irm.SendTLS13Request(domain)
+			if response != nil {
+				response.Body.Close()
+			}
+
+			if err == nil {
+				enabled = true
+			} else {
+				log.Println(err, " tcp1.2 failed")
+			}
+
+			return &ProbeResult{
+				Supported: enabled,
+				Err:       err,
+				Name:      "TLS 1/2 successful",
+			}
+		}
+
 	}
 	return &ProbeResult{
 		Supported: enabled,

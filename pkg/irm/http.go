@@ -62,3 +62,12 @@ func SendTLS12Request(domain string) (*http.Response, error) {
 	request.Close = true
 	return clientele.Do(request)
 }
+func SendTLS13Request(domain string) (*http.Response, error) {
+	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
+	//client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
+	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	// TLS is required for public HTTP/2 services, so assume `https`.
+	request, _ := http.NewRequest("GET", "https://"+domain, nil)
+	request.Close = true
+	return clientele.Do(request)
+}
