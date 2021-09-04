@@ -4,7 +4,7 @@
   <body>
     <div>
       <canvas id="Chart1"></canvas>
-      <canvas id="Chart2"> </canvas>
+
     </div>
 
     <div >
@@ -18,7 +18,7 @@
 </html>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-function chart(mydata, mylabels, mainlabel,chartID)
+function chart(mydata, mydata2, mylabels, http1label, http2label,chartID)
 {
   var ctx = document.getElementById(chartID).getContext('2d');
   var myChart = new Chart(ctx, {
@@ -26,8 +26,29 @@ function chart(mydata, mylabels, mainlabel,chartID)
     data: {
         labels: mylabels,
         datasets: [{
-            label: mainlabel,
+            label: http1label,
             data: mydata,
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        },
+        {
+            data: mydata2,
+            label: http2label,
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
@@ -54,8 +75,11 @@ function chart(mydata, mylabels, mainlabel,chartID)
             }
         }
     }
+    
 });
+
 }
+
 
 
   async function fetchData() {
@@ -83,22 +107,24 @@ function chart(mydata, mylabels, mainlabel,chartID)
     let timelabel = []
     
     let http11 = []
-    for(let i = 0; i < 50; i++)
+    let http2 = []
+    for(let i = 0; i < 51; i++)
     {
       timelabel.push(jsondata[i].timestapmp)
       http11.push(jsondata[i].http11.replace("%",""))
-    }
-
-    chart(http11,timelabel,"% of HTTP1.1 Websites","Chart1")
-
-
-    let http2 = []
-    for(let i = 0; i < 50; i++)
-    {
       http2.push(jsondata[i].http2.replace("%",""))
     }
+
+    chart(http11,http2,timelabel,"% of HTTP1.1 Websites","% of HTTP2 Websites","Chart1")
+
+
   
-    chart(http2,timelabel,"% of HTTP2 Websites","Chart2")
+    // for(let i = 0; i < 50; i++)
+    // {
+     
+    // }
+  
+    //chart(http2,timelabel,"% of HTTP2 Websites","Chart2")
 
   }
 
