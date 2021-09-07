@@ -1,8 +1,9 @@
 <html>
-  <head>
+  <head style="margin:0 auto;">
+    IRM Data
   </head>
   <body>
-    <div>
+    <div class="chart-container" style="position: relative; height:40vh; width:80vw">
       <canvas id="Chart1"></canvas>
 
     </div>
@@ -82,7 +83,7 @@ function chart(mydata, mydata2, mylabels, http1label, http2label,chartID)
 
 
 
-  async function fetchData() {
+  async function fetchDataHTTP() {
     var jsondata = [];
     let response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
     
@@ -128,8 +129,54 @@ function chart(mydata, mydata2, mylabels, http1label, http2label,chartID)
 
   }
 
+  async function fetchDataDLS() {
+    var jsondata = [];
+    let response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
+    
+    let data = await response.text()
+    let vals = data.split('\n')
+    for( let i = 1; i < vals.length-1; i++ ){
+    let row = vals[i].split(',');
+    jsondata.push(
+    {
+        timestapmp : row[0],
+        domaintest : row[1],
+        dls10 : row[2],
+        http11 : row[3],
+      });
+    }
+
+
+
+
+
+
+    let timelabel = []
+    
+    let http11 = []
+    let http2 = []
+    for(let i = 0; i < 51; i++)
+    {
+      timelabel.push(jsondata[i].timestapmp)
+      http11.push(jsondata[i].http11.replace("%",""))
+      http2.push(jsondata[i].http2.replace("%",""))
+    }
+
+    chart(http11,http2,timelabel,"% of HTTP1.1 Websites","% of HTTP2 Websites","Chart1")
+
+
+  
+    // for(let i = 0; i < 50; i++)
+    // {
+     
+    // }
+  
+    //chart(http2,timelabel,"% of HTTP2 Websites","Chart2")
+
+  }
+
   
 
 
-  fetchData()
+  fetchDataHTTP()
 </script> 
