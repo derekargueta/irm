@@ -1,6 +1,6 @@
 <html>
   <head style="margin:0 auto;">
-    IRM Data
+    The Internet Measurment Research Project
   </head>
   <body>
     <div class="chart-container" style="position: relative; height:40vh; width:80vw">
@@ -22,12 +22,15 @@
 function chart(data, datelabels, minilabel, chartID)
 {
   var ctx = document.getElementById(chartID).getContext('2d');
-  var myChart = new Chart(ctx, {
+
+  if(chartID == "Chart1")
+  {
+    var myChart = new Chart(ctx, {
     type: 'line',
     data: {
         labels: datelabels,
         datasets: [{
-            label: minilabel,
+            label: "HTTP1.1",
             data: data[0],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
@@ -48,7 +51,7 @@ function chart(data, datelabels, minilabel, chartID)
             borderWidth: 1
         },
         {
-            label: minilabel,
+            label: "HTTP1.2",
             data: data[1],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
@@ -78,6 +81,106 @@ function chart(data, datelabels, minilabel, chartID)
     }
     
 });
+  } else if (chartID == "Chart2") {
+    var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: datelabels,
+        datasets: [{
+            label: "DLS1.0",
+            data: data[0],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        },
+        {
+            label: "DLS1.1",
+            data: data[1],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        },
+        {
+            label: "DLS1.2",
+            data: data[2],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        },{
+            label: "DLS1.3",
+            data: data[3],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    
+});
+  }
+  
 
 }
 
@@ -103,11 +206,13 @@ function chart(data, datelabels, minilabel, chartID)
     let timelabel = []
     
     var http = [[],[]]
-    for(let i = 0; i < 51; i++)
+    var i = 0
+    while(jsondata[i] != undefined)
     {
       timelabel.push(jsondata[i].timestapmp)
       http[0].push(jsondata[i].http11.replace("%",""))
       http[1].push(jsondata[i].http2.replace("%",""))
+      i++;
     }
 
     chart(http,timelabel,"% of HTTP supported Websites", "Chart1")
@@ -134,13 +239,15 @@ function chart(data, datelabels, minilabel, chartID)
 
     let tls = [[],[],[],[]]
     let time = []
-    for(let i = 0; i < 56; i++)
+    var i = 0
+    while(jsondata[i] != undefined)
     {
       time.push(jsondata[i].time)
       tls[0].push(jsondata[i].tls10.replace("%",""))
       tls[1].push(jsondata[i].tls11.replace("%",""))
       tls[2].push(jsondata[i].tls12.replace("%",""))
       tls[3].push(jsondata[i].tls13.replace("%",""))
+      i++;
     }
 
     chart(tls,time,"% of DLS Websites","Chart2")
