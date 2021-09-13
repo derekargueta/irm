@@ -71,3 +71,11 @@ func SendTLS13Request(domain string) (*http.Response, error) {
 	request.Close = true
 	return clientele.Do(request)
 }
+
+func Sendcloudflarerequest(domain string) (*http.Response, error) {
+	client := &http.Client{Transport: &http.Transport{}, Timeout: 10 * time.Second}
+
+	request, _ := http.NewRequest("GET", domain, nil)
+	request.Close = true
+	return client.Do(request)
+}

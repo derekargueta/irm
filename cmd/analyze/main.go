@@ -33,6 +33,7 @@ type TotalTestResult struct { //go data type
 	tls11enabled      int
 	tls12enabled      int
 	tls13enabled      int
+	cloudflareipv6    int
 }
 
 type ProbeResult struct {
@@ -45,6 +46,7 @@ type ProbeResult struct {
 	tls11enabled      bool
 	tls12enabled      bool
 	tls13enabled      bool
+	cloudflareipv6    bool
 }
 
 const (
@@ -133,6 +135,9 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 			totalresults.tls13enabled += 1
 		}
 
+		if result.cloudflareipv6 {
+			totalresults.cloudflareipv6 += 1
+		}
 		if count == resultCount {
 			close(results)
 		}
@@ -168,6 +173,9 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.tls13enabled = TLS13Result.Err != nil
 	result.tls13enabled = TLS13Result.Supported
 
+	cloudflare := (&probes.cloudflareprobe{}).Run(myURL)
+	result.cloudflareipv6 = cloudflare.Err != nil
+	result.cloudflareipv6 = cloudflare.Supported
 	return result
 }
 
