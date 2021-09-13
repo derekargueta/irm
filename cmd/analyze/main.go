@@ -15,6 +15,7 @@ import (
 
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
+
 	"github.com/derekargueta/irm/pkg/util"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -173,9 +174,10 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.tls13enabled = TLS13Result.Err != nil
 	result.tls13enabled = TLS13Result.Supported
 
-	cloudflare := (&probes.cloudflareprobe{}).Run(myURL)
+	cloudflare := (&probes.Cloudflareprobe{}).Run(myURL)
 	result.cloudflareipv6 = cloudflare.Err != nil
 	result.cloudflareipv6 = cloudflare.Supported
+
 	return result
 }
 
@@ -219,7 +221,7 @@ func main() {
 	for {
 		if singleURL != "" {
 			test := filepathHTTP(singleURL)
-			log.Printf("http1.1: %t \n http1.2: %t \n TLS1.0: %t \n TLS1.1: %t \n TLS1.2: %t \n TLS1.3: %t", test.http11enabled, test.http11enabled, test.tls10enabled, test.tls11enabled, test.tls12enabled, test.tls13enabled)
+			log.Printf("http1.1: %t \n http1.2: %t \n TLS1.0: %t \n TLS1.1: %t \n TLS1.2: %t \n TLS1.3: %t \n Cloudflare: %t", test.http11enabled, test.http11enabled, test.tls10enabled, test.tls11enabled, test.tls12enabled, test.tls13enabled, test.cloudflareipv6)
 			break
 		}
 		if filepath != "" {
@@ -238,6 +240,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls13enabled, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.cloudflareipv6, domainsTested)),
 				}}
 			//added timer
 			//          TOKEN AUTHENTICATION

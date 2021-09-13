@@ -1,7 +1,9 @@
 package probes
 
 import (
+	"bufio"
 	"log"
+	"net"
 
 	"github.com/derekargueta/irm/pkg/irm"
 )
@@ -10,29 +12,39 @@ import (
  * Checks if the domain supports HTTP/1.1.
  */
 
-type cloudflareprobe struct{}
+type Cloudflareprobe struct{}
 
-func (h *cloudflareprobe) Run(domain string) *ProbeResult {
+func (h *Cloudflareprobe) Run(domain string) *ProbeResult {
 	enabled := false
 
-	response, err := irm.Sendcloudflarerequest(domain)
-	if response != nil {
-		response.Body.Close()
+	cidrsurl, err := irm.Sendcloudflare(domain)
+	if err != nil {
+		log.Println("nope")
 	}
+	cidrs := bufio.NewScanner(cidrsurl.Body)
 
-	if err == nil {
-		enabled = true
-	} else {
+	var arr2 []string
+	for cidrs.Scan() {
+		arr2 = append(arr2, cidrs.Text())
+	}
+	ips, err := net.LookupIP(domain)
+	if err != nil {
+		log.Println("nope")
+	}
+	for _, cidr := range arr2 {
+		_, cidrsparse, _ := net.ParseCIDR(cidr)
 
-		response, err := irm.Sendcloudflarerequest(domain)
-		if response != nil {
-			response.Body.Close()
+		log.Println(domain)
+		for _, x := range ips {
+
+			if cidrsparse.Contains(x) {
+				enabled = true
+				break
+			}
 		}
+		if enabled == true {
+			break
 
-		if err == nil {
-			enabled = true
-		} else {
-			log.Println(err.Error() + " by cloudflare request")
 		}
 
 	}

@@ -72,9 +72,11 @@ func SendTLS13Request(domain string) (*http.Response, error) {
 	return clientele.Do(request)
 }
 
-func Sendcloudflarerequest(domain string) (*http.Response, error) {
+func Sendcloudflare(domain string) (*http.Response, error) {
+	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
 	client := &http.Client{Transport: &http.Transport{}, Timeout: 10 * time.Second}
-
+	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", domain, nil)
 	request.Close = true
 	return client.Do(request)
