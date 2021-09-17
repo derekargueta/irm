@@ -175,7 +175,7 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.tls13enabled = TLS13Result.Supported
 
 	cloudflare := (&probes.Cloudflareprobe{}).Run(myURL)
-	result.cloudflareipv6 = cloudflare.Err != nil
+	//result.cloudflareipv6 = cloudflare.Err != nil
 	result.cloudflareipv6 = cloudflare.Supported
 
 	return result
