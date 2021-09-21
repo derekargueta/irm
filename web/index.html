@@ -87,7 +87,7 @@
           labels: datelabels,
           datasets: [
             {
-              label: "DLS1.0",
+              label: "TLS1.0",
               data: data[0],
               backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
@@ -108,7 +108,7 @@
               borderWidth: 1
             },
             {
-              label: "DLS1.1",
+              label: "TLS1.1",
               data: data[1],
               backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
@@ -129,7 +129,7 @@
               borderWidth: 1
             },
             {
-              label: "DLS1.2",
+              label: "TLS1.2",
               data: data[2],
               backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
@@ -150,7 +150,7 @@
               borderWidth: 1
             },
             {
-              label: "DLS1.3",
+              label: "TLS1.3",
               data: data[3],
               backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
@@ -214,7 +214,7 @@
     //chart(data, timelabels, minilabels, chartID)
   }
 
-  async function fetchDataDLS() {
+  async function fetchDataTLS() {
     var jsondata = [];
     let response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv');
 
@@ -243,10 +243,10 @@
       i++;
     }
 
-    chart(tls,time,"% of DLS Websites","Chart2");
+    chart(tls,time,"% of TLS Websites","Chart2");
     //chart(data, labels, datelabel, chartID)
   }
 
-  fetchDataDLS();
+  fetchDataTLS();
   fetchDataHTTP();
 </script>
