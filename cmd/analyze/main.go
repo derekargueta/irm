@@ -80,6 +80,8 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 		os.Exit(1)
 	}
 
+	log.Printf("Running with %d goroutine workers\n", workers)
+
 	for x := 0; x < workers; x++ {
 		go func() {
 			worker(jobs, results)
@@ -195,27 +197,23 @@ func main() {
 	var numWorkers int
 	var timebetrun int
 	var enableGit int
-	var singleURL string
+	var singleDomain string
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
 	flag.IntVar(&timebetrun, "d", 10, "time between runs")
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
-	flag.StringVar(&singleURL, "url", "", "test single URL")
+	flag.StringVar(&singleDomain, "domain", "", "test single domain")
 	flag.Parse()
-	//mainPath := "app/"
-	//"/root/"
-	// "/Users/Tavo"
-	log.Printf("Running with %d goroutine workers\n", numWorkers)
+
+	if singleDomain != "" {
+		test := filepathHTTP(singleDomain)
+		fmt.Printf("HTTP/1.1: %t \nHTTP/1.2: %t \nTLSv1.0: %t \nTLSv1.1: %t \nTLSv1.2: %t \nTLSv1.3: %t\n", test.http11enabled, test.http11enabled, test.tls10enabled, test.tls11enabled, test.tls12enabled, test.tls13enabled)
+		os.Exit(0)
+	}
 
 	for {
-		if singleURL != "" {
-			test := filepathHTTP(singleURL)
-			log.Printf("http1.1: %t \n http1.2: %t \n TLS1.0: %t \n TLS1.1: %t \n TLS1.2: %t \n TLS1.3: %t", test.http11enabled, test.http11enabled, test.tls10enabled, test.tls11enabled, test.tls12enabled, test.tls13enabled)
-			break
-		}
 		if filepath != "" {
-			fmt.Println("in both right now")
 			timer := time.Now()
 			totalresults := fileEntry(filepath, numWorkers)
 			domainsTested := totalresults.domainsTested
