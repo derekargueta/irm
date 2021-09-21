@@ -175,21 +175,6 @@ func filepathHTTP(myURL string) ProbeResult {
 	return result
 }
 
-func websitepathHTTP2(urlInput string) {
-	time.Sleep(100 * time.Millisecond)
-
-	response, err := irm.SendHTTP2Request(urlInput)
-	if response != nil {
-		response.Body.Close()
-	}
-
-	if err != nil {
-		fmt.Printf(http2NoSupportMsgString, urlInput)
-	} else {
-		fmt.Printf(http2SupportMsgString, urlInput)
-	}
-}
-
 func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
 	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
