@@ -8,6 +8,14 @@ import (
 	"golang.org/x/net/http2"
 )
 
+type HttpRunner interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// Ensure that http.Client satisfies the HttpRunner interface so that we can mock it in unit tests
+// using a dummy struct that implements Do.
+var _ HttpRunner = &http.Client{}
+
 /*
  * HTTP utility stuff.
  */
