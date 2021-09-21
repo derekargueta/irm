@@ -21,10 +21,22 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
-type TotalTestResult struct { //go data type
+type ProbeResult struct {
+	http10enabled     bool
+	http11enabled     bool
+	http2enabled      bool
+	errorhttp1occured bool
+	errorhttp2occured bool
+	tls10enabled      bool
+	tls11enabled      bool
+	tls12enabled      bool
+	tls13enabled      bool
+}
+
+type TotalTestResult struct {
 	domainsTested     int
-	http2enabled      int //increment when http2
 	http11enabled     int
+	http2enabled      int
 	http10enabled     int
 	errorhttp1occured int
 	errorhttp2occured int
@@ -35,16 +47,41 @@ type TotalTestResult struct { //go data type
 	tls13enabled      int
 }
 
-type ProbeResult struct {
-	http2enabled      bool
-	http11enabled     bool
-	http10enabled     bool
-	errorhttp1occured bool
-	errorhttp2occured bool
-	tls10enabled      bool
-	tls11enabled      bool
-	tls12enabled      bool
-	tls13enabled      bool
+func (t *TotalTestResult) AddResult(result ProbeResult) {
+	t.domainsTested += 1
+
+	if result.errorhttp1occured && result.errorhttp2occured {
+		t.erroroccured += 1
+	}
+
+	if result.errorhttp1occured {
+		t.errorhttp1occured += 1
+	}
+
+	if result.errorhttp2occured {
+		t.errorhttp2occured += 1
+	}
+
+	if result.http2enabled {
+		t.http2enabled += 1
+	}
+
+	if result.http11enabled {
+		t.http11enabled += 1
+	}
+
+	if result.tls10enabled {
+		t.tls10enabled += 1
+	}
+	if result.tls11enabled {
+		t.tls11enabled += 1
+	}
+	if result.tls12enabled {
+		t.tls12enabled += 1
+	}
+	if result.tls13enabled {
+		t.tls13enabled += 1
+	}
 }
 
 const (
@@ -68,17 +105,15 @@ create listener to prevent tcp error
 instantiate before starting workers
 */
 func fileEntry(filepath string, workers int) TotalTestResult {
+	domains, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
-	domains, erroropen := os.Open(filepath)
 	domain := bufio.NewScanner(domains)
 
 	jobs := make(chan string, 300)
 	results := make(chan ProbeResult, 1000000)
-
-	if erroropen != nil {
-		log.Println(erroropen)
-		os.Exit(1)
-	}
 
 	log.Printf("Running with %d goroutine workers\n", workers)
 
@@ -100,40 +135,7 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 	totalresults := TotalTestResult{}
 	for result := range results {
 		resultCount += 1
-		totalresults.domainsTested += 1
-
-		if result.errorhttp1occured && result.errorhttp2occured {
-			totalresults.erroroccured += 1
-		}
-
-		if result.errorhttp1occured {
-			totalresults.errorhttp1occured += 1
-		}
-
-		if result.errorhttp2occured {
-			totalresults.errorhttp2occured += 1
-		}
-
-		if result.http2enabled {
-			totalresults.http2enabled += 1
-		}
-
-		if result.http11enabled {
-			totalresults.http11enabled += 1
-		}
-
-		if result.tls10enabled {
-			totalresults.tls10enabled += 1
-		}
-		if result.tls11enabled {
-			totalresults.tls11enabled += 1
-		}
-		if result.tls12enabled {
-			totalresults.tls12enabled += 1
-		}
-		if result.tls13enabled {
-			totalresults.tls13enabled += 1
-		}
+		totalresults.AddResult(result)
 
 		if count == resultCount {
 			close(results)
@@ -199,7 +201,7 @@ func main() {
 	var enableGit int
 	var singleDomain string
 	flag.StringVar(&filepath, "f", "", "file path")
-	flag.StringVar(&filepathexport, "o", "", "export to csv")
+	flag.StringVar(&filepathexport, "o", "/app/tempirmdata/results.csv", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
 	flag.IntVar(&timebetrun, "d", 10, "time between runs")
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
@@ -212,10 +214,13 @@ func main() {
 		os.Exit(0)
 	}
 
-	for {
-		if filepath != "" {
+	if filepath == "" {
+		log.Fatal("Must specify -filepath or -domain")
+	} else {
+		for {
 			timer := time.Now()
 			totalresults := fileEntry(filepath, numWorkers)
+			testDuration := time.Since(timer).Seconds()
 			domainsTested := totalresults.domainsTested
 			data := [][]string{
 				{time.Now().Format("2006-01-02 15:04:05"),
@@ -223,7 +228,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
-					fmt.Sprintf("%.2fs", time.Since(timer).Seconds()),
+					fmt.Sprintf("%.2fs", testDuration),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls10enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
@@ -251,7 +256,7 @@ func main() {
 				if err != nil {
 					log.Printf("generate publickeys failed: %s\n", err.Error())
 				}
-				checkFile, err := os.Open("/app/tempirmdata/results.csv")
+				checkFile, err := os.Open(filepathexport)
 				if err != nil {
 					_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
 						Auth:     publicKeys,
@@ -267,7 +272,7 @@ func main() {
 				}
 				checkFile.Close()
 
-				file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+				file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
 				if err != nil {
 					log.Println(err.Error() + "cant open results in tempirmdata")
 				}
@@ -296,7 +301,7 @@ func main() {
 
 				_, err = tree.Add("results.csv")
 				if err != nil {
-					log.Println("doesn't exists")
+					log.Println("doesn't exist")
 				} else {
 					log.Println("exists")
 				}
@@ -308,35 +313,46 @@ func main() {
 					},
 				})
 				if err != nil {
-					log.Println("commit not workig properly")
+					log.Println("commit not working properly")
 				}
 				mrr = repo.Push(&git.PushOptions{
 					RemoteName: "origin",
 					Auth:       publicKeys,
 				})
 				log.Printf("errors that happened: %s", mrr)
-				time.Sleep(time.Duration(timebetrun) * time.Second)
 			} else {
-				file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
-				if err != nil {
-					log.Println(err.Error() + "cant open results in tempirmdata")
-				}
+				if filepathexport != "" {
+					file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+					if err != nil {
+						log.Println(err.Error() + "cant open results in tempirmdata")
+					}
 
-				writer := csv.NewWriter(file)
+					writer := csv.NewWriter(file)
 
-				for _, value := range data {
-					writer.Write(value)
-					log.Println(value)
+					for _, value := range data {
+						writer.Write(value)
+						log.Println(value)
+					}
+					writer.Flush()
+					if err := writer.Error(); err != nil {
+						log.Println(err.Error())
+					}
+					file.Close()
+					fmt.Printf("test results written to %s\n", filepathexport)
+				} else {
+					fmt.Printf("Test Duration: %.2fs\n", testDuration)
+					fmt.Printf("Success Rate: %.2f%%\n", util.Percent((domainsTested - totalresults.erroroccured), domainsTested))
+					fmt.Printf("HTTP/1.1 enabled: %.2f%% \n", util.Percent(totalresults.http11enabled, domainsTested))
+					fmt.Printf("HTTP/1.2 enabled: %.2f%%\n", util.Percent(totalresults.http2enabled, domainsTested))
+					fmt.Printf("TLSv1.0 enabled: %.2f%%\n", util.Percent(totalresults.tls10enabled, domainsTested))
+					fmt.Printf("TLSv1.1 enabled: %.2f%%\n", util.Percent(totalresults.tls11enabled, domainsTested))
+					fmt.Printf("TLSv1.2 enabled: %.2f%%\n", util.Percent(totalresults.tls12enabled, domainsTested))
+					fmt.Printf("TLSv1.3 enabled: %.2f%%\n", util.Percent(totalresults.tls13enabled, domainsTested))
 				}
-				writer.Flush()
-				log.Println(writer.Error())
-				file.Close()
-				fmt.Println("Done")
-				break
 			}
 
+			log.Printf("sleeping for %d seconds\b", timebetrun)
+			time.Sleep(time.Duration(timebetrun) * time.Second)
 		}
-
 	}
-
 }
