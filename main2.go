@@ -52,31 +52,7 @@ func listurls() {
 		log.Println("nope")
 	}
 	cidrs := bufio.NewScanner(cidrsurl.Body)
-	// defer cidrsurl.Body.Close()
-
-	// for cidrs.Scan() {
-	// 	_, cidrsparse, _ := net.ParseCIDR(cidrs.Text())
-	// 	log.Println("current cidrs parse", cidrsparse)
-
-	// 	for domainlist.Scan() {
-	// 		ips, err := net.LookupIP(domainlist.Text())
-	// 		if err != nil {
-	// 			log.Println("nope")
-	// 		}
-	// 		log.Println(domainlist.Text())
-	// 		for _, x := range ips {
-	// 			if cidrsparse.Contains(x) {
-	// 				log.Println(cidrsparse, " yes")
-
-	// 			} else {
-	// 				log.Println(cidrsparse, " no")
-
-	// 			}
-	// 		}
-
-	// 	}
-
-	// }
+	
 	var arr []string
 	for domainlist.Scan() {
 		arr = append(arr, domainlist.Text())

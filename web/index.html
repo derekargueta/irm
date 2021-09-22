@@ -5,197 +5,193 @@
   <body>
     <div class="chart-container" style="position: relative; height:40vh; width:80vw">
       <canvas id="Chart1"></canvas>
-      <canvas id="Chart2"></canvas> 
+      <canvas id="Chart2"></canvas>
     </div>
 
-    <div >
+    <div>
 
     </div>
   </body>
- 
+
 <!-- make chart smaller -->
 <!-- make y axis 0-100 / consistent -->
- 
+
 </html>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-function chart(data, datelabels, minilabel, chartID)
-{
-  var ctx = document.getElementById(chartID).getContext('2d');
+  function chart(data, datelabels, minilabel, chartID) {
+    var ctx = document.getElementById(chartID).getContext('2d');
 
-  if(chartID == "Chart1")
-  {
-    var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: datelabels,
-        datasets: [{
-            label: "HTTP1.1",
-            data: data[0],
-            backgroundColor: [
+    if (chartID == "Chart1") {
+      var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: datelabels,
+          datasets: [
+            {
+              label: "HTTP1.1",
+              data: data[0],
+              backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
                 'rgba(255, 206, 86, 0.2)',
                 'rgba(75, 192, 192, 0.2)',
                 'rgba(153, 102, 255, 0.2)',
                 'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
+              ],
+              borderColor: [
                 'rgba(255, 99, 132, 1)',
                 'rgba(54, 162, 235, 1)',
                 'rgba(255, 206, 86, 1)',
                 'rgba(75, 192, 192, 1)',
                 'rgba(153, 102, 255, 1)',
                 'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        },
-        {
-            label: "HTTP1.2",
-            data: data[1],
-            backgroundColor: [
+              ],
+              borderWidth: 1
+            },
+            {
+              label: "HTTP1.2",
+              data: data[1],
+              backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
                 'rgba(255, 206, 86, 0.2)',
                 'rgba(75, 192, 192, 0.2)',
                 'rgba(153, 102, 255, 0.2)',
                 'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
+              ],
+              borderColor: [
                 'rgba(255, 99, 132, 1)',
                 'rgba(54, 162, 235, 1)',
                 'rgba(255, 206, 86, 1)',
                 'rgba(75, 192, 192, 1)',
                 'rgba(153, 102, 255, 1)',
                 'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
+              ],
+              borderWidth: 1
             }
-        }
-    }
-    
-});
-  } else if (chartID == "Chart2") {
-    var myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: datelabels,
-        datasets: [{
-            label: "DLS1.0",
-            data: data[0],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
+          ]
         },
-        {
-            label: "DLS1.1",
-            data: data[1],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        },
-        {
-            label: "DLS1.2",
-            data: data[2],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        },{
-            label: "DLS1.3",
-            data: data[3],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(255, 159, 64, 0.2)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)',
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
+        options: {
+          scales: {
             y: {
-                beginAtZero: true
+              beginAtZero: true
             }
+          }
         }
+      });
+    } else if (chartID == "Chart2") {
+      var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: datelabels,
+          datasets: [
+            {
+              label: "TLS1.0",
+              data: data[0],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+              ],
+              borderWidth: 1
+            },
+            {
+              label: "TLS1.1",
+              data: data[1],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+              ],
+              borderWidth: 1
+            },
+            {
+              label: "TLS1.2",
+              data: data[2],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+              ],
+              borderWidth: 1
+            },
+            {
+              label: "TLS1.3",
+              data: data[3],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+              ],
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
     }
-    
-});
   }
-  
-
-}
-
-
 
   async function fetchDataHTTP() {
     var jsondata = [];
     let response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
-    
+
     let data = await response.text()
     let vals = data.split('\n')
-    for( let i = 1; i < vals.length-1; i++ ){
-    let row = vals[i].split(',');
-    jsondata.push(
-    {
+    for (let i = 1; i < vals.length-1; i++) {
+      let row = vals[i].split(',');
+      jsondata.push({
         timestapmp : row[0],
         domaintest : row[1],
         http2 : row[2],
@@ -203,32 +199,30 @@ function chart(data, datelabels, minilabel, chartID)
       });
     }
 
-    let timelabel = []
-    
-    var http = [[],[]]
-    var i = 0
-    while(jsondata[i] != undefined)
-    {
-      timelabel.push(jsondata[i].timestapmp)
-      http[0].push(jsondata[i].http11.replace("%",""))
-      http[1].push(jsondata[i].http2.replace("%",""))
+    let timelabel = [];
+
+    var http = [[],[]];
+    var i = 0;
+    while (jsondata[i] != undefined) {
+      timelabel.push(jsondata[i].timestapmp);
+      http[0].push(jsondata[i].http11.replace("%",""));
+      http[1].push(jsondata[i].http2.replace("%",""));
       i++;
     }
 
-    chart(http,timelabel,"% of HTTP supported Websites", "Chart1")
+    chart(http,timelabel,"% of HTTP supported Websites", "Chart1");
     //chart(data, timelabels, minilabels, chartID)
   }
 
-  async function fetchDataDLS() {
+  async function fetchDataTLS() {
     var jsondata = [];
-    let response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
-    
-    let data = await response.text()
-    let vals = data.split('\n')
-    for( let i = 1; i < vals.length-1; i++ ){
-    let row = vals[i].split(',');
-    jsondata.push(
-    {
+    let response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv');
+
+    let data = await response.text();
+    let vals = data.split('\n');
+    for (let i = 1; i < vals.length-1; i++) {
+      let row = vals[i].split(',');
+      jsondata.push({
         time: row[0],
         tls10 : row[6],
         tls11 : row[7],
@@ -237,25 +231,22 @@ function chart(data, datelabels, minilabel, chartID)
       });
     }
 
-    let tls = [[],[],[],[]]
-    let time = []
-    var i = 0
-    while(jsondata[i] != undefined)
-    {
-      time.push(jsondata[i].time)
-      tls[0].push(jsondata[i].tls10.replace("%",""))
-      tls[1].push(jsondata[i].tls11.replace("%",""))
-      tls[2].push(jsondata[i].tls12.replace("%",""))
-      tls[3].push(jsondata[i].tls13.replace("%",""))
+    let tls = [[],[],[],[]];
+    let time = [];
+    var i = 0;
+    while (jsondata[i] != undefined) {
+      time.push(jsondata[i].time);
+      tls[0].push(jsondata[i].tls10.replace("%",""));
+      tls[1].push(jsondata[i].tls11.replace("%",""));
+      tls[2].push(jsondata[i].tls12.replace("%",""));
+      tls[3].push(jsondata[i].tls13.replace("%",""));
       i++;
     }
 
-    chart(tls,time,"% of DLS Websites","Chart2")
+    chart(tls,time,"% of TLS Websites","Chart2");
     //chart(data, labels, datelabel, chartID)
   }
 
-  
-
-  fetchDataDLS()
-  fetchDataHTTP()
-</script> 
+  fetchDataTLS();
+  fetchDataHTTP();
+</script>

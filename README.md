@@ -10,8 +10,8 @@ Project layout is based on https://github.com/golang-standards/project-layout
 # Questions to answer
 ## HTTP
 - [ ] How many HTTP services have HTTP/1.0 enabled?
-- [ ] How many HTTP services have HTTP/2 enabled?
-- [ ] Are there HTTP services that do _not_ have HTTP/1.1 enabled?
+- [x] How many HTTP services have HTTP/1.1 enabled?
+- [x] How many HTTP services have HTTP/2 enabled?
 - [ ] How many HTTP services support HTTP/3?
 - [ ] How many HTTP services support UDP on :443? (prerequisite to QUIC/HTTP3)
 - [ ] How many HTTP services support plaintext HTTP on port 80?
@@ -23,10 +23,10 @@ Use DNS answers to check this (A records vs AAAA records), then connect over tha
 - [ ] How many HTTP services are served over both?
 
 ## TLS
-- [ ] How many TLS-enabled HTTP services support TLS 1.0? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
-- [ ] How many TLS-enabled HTTP services support TLS 1.1? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
-- [ ] How many TLS-enabled HTTP services support TLS 1.2?
-- [ ] How many TLS-enabled HTTP services support TLS 1.3?
+- [x] How many TLS-enabled HTTP services support TLS 1.0? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
+- [x] How many TLS-enabled HTTP services support TLS 1.1? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
+- [x] How many TLS-enabled HTTP services support TLS 1.2?
+- [x] How many TLS-enabled HTTP services support TLS 1.3?
 - [ ] What is the distribution of root CA providers? (Digicert, Verisign, Komodo, etc.)
 
 ## CDNs/Datacenters
