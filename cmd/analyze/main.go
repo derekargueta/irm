@@ -31,6 +31,8 @@ type ProbeResult struct {
 	tls11enabled      bool
 	tls12enabled      bool
 	tls13enabled      bool
+	cloudflare        bool
+	cloudflareipv4    bool
 	cloudflareipv6    bool
 }
 
@@ -46,6 +48,8 @@ type TotalTestResult struct {
 	tls11enabled      int
 	tls12enabled      int
 	tls13enabled      int
+	cloudflare        int
+	cloudflareipv4    int
 	cloudflareipv6    int
 }
 
@@ -84,6 +88,16 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 	if result.tls13enabled {
 		t.tls13enabled += 1
 	}
+	if result.cloudflare {
+		t.cloudflare += 1
+	}
+	if result.cloudflareipv4 {
+		t.cloudflareipv4 += 1
+	}
+	if result.cloudflareipv6 {
+		t.cloudflareipv6 += 1
+	}
+
 }
 
 const (
@@ -139,9 +153,6 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 		resultCount += 1
 		totalresults.AddResult(result)
 
-		if result.cloudflareipv6 {
-			totalresults.cloudflareipv6 += 1
-		}
 		if count == resultCount {
 			close(results)
 		}
@@ -177,9 +188,10 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.tls13enabled = TLS13Result.Err != nil
 	result.tls13enabled = TLS13Result.Supported
 
-	cloudflare := (&probes.Cloudflareprobe{}).Run(myURL)
-	//result.cloudflareipv6 = cloudflare.Err != nil
-	result.cloudflareipv6 = cloudflare.Supported
+	Cloudflare := (&probes.Cloudflareprobe{}).Run(myURL)
+	result.cloudflare = Cloudflare.Supported
+	result.cloudflareipv4 = Cloudflare.Supportedipv4
+	result.cloudflareipv6 = Cloudflare.Supportedipv6
 
 	return result
 }
@@ -195,7 +207,7 @@ func main() {
 	var enableGit int
 	var singleDomain string
 	flag.StringVar(&filepath, "f", "", "file path")
-	flag.StringVar(&filepathexport, "o", "/app/tempirmdata/results.csv", "export to csv")
+	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
 	flag.IntVar(&timebetrun, "d", 10, "time between runs")
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
@@ -227,7 +239,7 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls13enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.cloudflareipv6, domainsTested)),
+					fmt.Sprintf("%.2f%%", util.Percent(totalresults.cloudflare, domainsTested)),
 				}}
 			//added timer
 			//          TOKEN AUTHENTICATION
@@ -343,7 +355,11 @@ func main() {
 					fmt.Printf("TLSv1.1 enabled: %.2f%%\n", util.Percent(totalresults.tls11enabled, domainsTested))
 					fmt.Printf("TLSv1.2 enabled: %.2f%%\n", util.Percent(totalresults.tls12enabled, domainsTested))
 					fmt.Printf("TLSv1.3 enabled: %.2f%%\n", util.Percent(totalresults.tls13enabled, domainsTested))
+					fmt.Printf("cloudflares total enabled: %.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested))
+					fmt.Printf("cloudflares ipv4 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested))
+					fmt.Printf("cloudflares ipv6 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested))
 				}
+				os.Exit(0)
 			}
 
 			log.Printf("sleeping for %d seconds\b", timebetrun)

@@ -9,51 +9,86 @@ import (
 )
 
 /**
- * Checks if the domain supports HTTP/1.1.
+ * Checks if the domain supports cloudflare.
  */
 
 type Cloudflareprobe struct{}
 
-func (h *Cloudflareprobe) Run(domain string) *ProbeResult {
-	enabled := false
-
-	cidrsurl, err := irm.Sendcloudflare()
+func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudflare {
+	cidrsurlipv6, err := irm.Sendcloudflareipv6()
+	cidrsurlipv4, err2 := irm.Sendcloudflareipv4()
 	if err != nil {
-		log.Println("nope on sendcloudflare")
+		log.Println("nope on Sendcloudflareipv6")
+	}
+	if err2 != nil {
+		log.Println("nope on Sendcloudflareipv4")
 	}
 
-	cidrs := bufio.NewScanner(cidrsurl.Body)
+	cidrsipv6 := bufio.NewScanner(cidrsurlipv6.Body)
+	cidrsipv4 := bufio.NewScanner(cidrsurlipv4.Body)
 
-	var arr2 []string
-	for cidrs.Scan() {
-		arr2 = append(arr2, cidrs.Text())
-	}
 	ips, err2 := net.LookupIP(domain)
 	if err2 != nil {
 		log.Println("nope on lookupIP")
 	}
-	for _, cidr := range arr2 {
-		_, cidrsparse, err3 := net.ParseCIDR(cidr)
-		if err3 != nil {
-			log.Println("cant parse")
-		}
-		for _, x := range ips {
 
-			if cidrsparse.Contains(x) {
-				enabled = true
-				break
+	// enabledipv4 := false
+	// enabledipv6 := false
+	// for _, x := range ips {
+	// 	if x.To4() != nil {
+	// 		for cidrsipv4.Scan() {
+	// 			//log.Println("scanning for ipv4")
+	// 			_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
+	// 			if cidrsparse.Contains(x) {
+	// 				//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
+	// 				enabledipv4 = true
+	// 			}
+
+	// 		}
+	// 	} else {
+	// 		for cidrsipv6.Scan() {
+	// 			_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
+	// 			if cidrsparse.Contains(x) {
+	// 				//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
+	// 				enabledipv6 = true
+	// 			}
+
+	// 		}
+	// 	}
+	// }
+
+	return &ProbeResultcloudflare{
+		Supported:     cidrContains(cidrsipv4, cidrsipv6, ips),
+		Supportedipv4: false, //not finished
+		Supportedipv6: false, //not finished
+		Err:           err2,
+		Name:          "cloudflare supported",
+	}
+}
+
+func cidrContains(cidrsipv4 *bufio.Scanner, cidrsipv6 *bufio.Scanner, ips []net.IP) bool {
+	for _, x := range ips {
+		if x.To4() != nil {
+			for cidrsipv4.Scan() {
+				//log.Println("scanning for ipv4")
+				_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
+				if cidrsparse.Contains(x) {
+					//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
+					return true
+				}
+
+			}
+		} else {
+			for cidrsipv6.Scan() {
+				_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
+				if cidrsparse.Contains(x) {
+					//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
+					return true
+				}
+
 			}
 		}
-		if enabled == true {
-			break
-
-		}
 
 	}
-
-	return &ProbeResult{
-		Supported: enabled,
-		Err:       err,
-		Name:      "cloudflare supported",
-	}
+	return false
 }

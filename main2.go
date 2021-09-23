@@ -12,34 +12,75 @@ import (
 func main() {
 	// A := "172.17.0.0/16"
 	// B := "172.17.0.2"
-	// oneurl("cloudflare.com")
-	listurls()
+	oneurl("google.com")
+
 }
 
 func oneurl(myurl string) {
-	cidrsurl, err := http.Get("https://www.cloudflare.com/ips-v4")
+	enabled := false
+	cidrsv4, err := http.Get("https://www.cloudflare.com/ips-v4")
+	cidrsv6, err := http.Get("https://www.cloudflare.com/ips-v6")
 	if err != nil {
 		log.Println("nope")
 	}
-	cidrs := bufio.NewScanner(cidrsurl.Body)
-	defer cidrsurl.Body.Close()
-
-	for cidrs.Scan() {
-		_, cidrsparse, _ := net.ParseCIDR(cidrs.Text())
-
-		ips, err := net.LookupIP(myurl)
-		if err != nil {
-			log.Println("nope")
-		}
-		for _, x := range ips {
-			if cidrsparse.Contains(x) {
-				log.Println(cidrsparse, " yes")
-			} else {
-				log.Println(cidrsparse, "no")
+	cidrsipv4 := bufio.NewScanner(cidrsv4.Body)
+	cidrsipv6 := bufio.NewScanner(cidrsv6.Body)
+	//defer cidrsurl.Body.Close()
+	ips, err := net.LookupIP(myurl)
+	if err != nil {
+		log.Println("nope")
+	}
+	for _, x := range ips {
+		if x.To4() != nil {
+			for cidrsipv4.Scan() {
+				//log.Println("scanning for ipv4")
+				_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
+				if cidrsparse.Contains(x) {
+					enabled = true
+					break
+				}
+				if enabled == true {
+					break
+				}
 			}
+		} else {
+			for cidrsipv6.Scan() {
+				_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
+				if cidrsparse.Contains(x) {
+
+					enabled = true
+				}
+			}
+		}
+		if enabled == true {
+			break
 		}
 
 	}
+
+	// for cidrs.Scan() {
+	// 	_, cidrsparse, _ := net.ParseCIDR(cidrs.Text())
+
+	// 	ips, err := net.LookupIP(myurl)
+	// 	if err != nil {
+	// 		log.Println("nope")
+	// 	}
+	// 	for _, x := range ips {
+	// 		if cidrsparse.Contains(x) {
+	// 			log.Println(cidrsparse, " yes")
+	// 			enabled = true
+	// 			break
+	// 		} else {
+	// 			log.Println(cidrsparse, "no")
+	// 		}
+
+	// 	}
+	// 	if enabled == true {
+	// 		break
+	// 	}
+
+	// }
+	fmt.Println(enabled)
 }
 func listurls() {
 	domains, erroropen := os.Open("/Users/Tavo/Documents/irm/domains/me.txt")
@@ -52,7 +93,7 @@ func listurls() {
 		log.Println("nope")
 	}
 	cidrs := bufio.NewScanner(cidrsurl.Body)
-	
+
 	var arr []string
 	for domainlist.Scan() {
 		arr = append(arr, domainlist.Text())

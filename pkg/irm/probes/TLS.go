@@ -24,7 +24,7 @@ func (h *TLS) Run(domain string, typeTLS int) *ProbeResult {
 			if err == nil {
 				enabled = true
 			} else {
-				log.Println(err, " tcp1.0 failed")
+				log.Println(err, " tls1.0 failed")
 			}
 
 			return &ProbeResult{
@@ -44,7 +44,7 @@ func (h *TLS) Run(domain string, typeTLS int) *ProbeResult {
 			if err == nil {
 				enabled = true
 			} else {
-				log.Println(err, " tcp1.1 failed")
+				log.Println(err, " tls1.1 failed")
 			}
 
 			return &ProbeResult{
@@ -63,7 +63,7 @@ func (h *TLS) Run(domain string, typeTLS int) *ProbeResult {
 			if err == nil {
 				enabled = true
 			} else {
-				log.Println(err, " tcp1.2 failed")
+				log.Println(err, " tls1.2 failed")
 			}
 
 			return &ProbeResult{
@@ -83,7 +83,7 @@ func (h *TLS) Run(domain string, typeTLS int) *ProbeResult {
 			if err == nil {
 				enabled = true
 			} else {
-				log.Println(err, " tcp1.2 failed")
+				log.Println(err, " tls1.2 failed")
 			}
 
 			return &ProbeResult{
