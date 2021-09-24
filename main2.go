@@ -12,10 +12,23 @@ import (
 func main() {
 	// A := "172.17.0.0/16"
 	// B := "172.17.0.2"
-	oneurl("google.com")
+	oneurl("cloudflare.com")
 
 }
+func yes()
+{
+	ips, err2 := net.LookupIP("cloudflare.com")
+	if err2 != nil {
+		log.Println("nope on lookupIP")
+	}
 
+	for _, x := range ips {
+		if x.To4() != nil {
+			fmt.Println("yes")
+		} else {
+			fmt.Println("no")
+		}
+}
 func oneurl(myurl string) {
 	enabled := false
 	cidrsv4, err := http.Get("https://www.cloudflare.com/ips-v4")
@@ -39,9 +52,6 @@ func oneurl(myurl string) {
 					enabled = true
 					break
 				}
-				if enabled == true {
-					break
-				}
 			}
 		} else {
 			for cidrsipv6.Scan() {
@@ -49,6 +59,8 @@ func oneurl(myurl string) {
 				if cidrsparse.Contains(x) {
 
 					enabled = true
+					log.Println("ipv6")
+					break
 				}
 			}
 		}

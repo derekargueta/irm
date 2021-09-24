@@ -356,7 +356,7 @@ func main() {
 					fmt.Printf("TLSv1.2 enabled: %.2f%%\n", util.Percent(totalresults.tls12enabled, domainsTested))
 					fmt.Printf("TLSv1.3 enabled: %.2f%%\n", util.Percent(totalresults.tls13enabled, domainsTested))
 					fmt.Printf("cloudflares total enabled: %.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested))
-					fmt.Printf("cloudflares ipv4 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested))
+					fmt.Printf("cloudflares ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested))
 					fmt.Printf("cloudflares ipv6 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested))
 				}
 				os.Exit(0)

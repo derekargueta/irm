@@ -31,50 +31,18 @@ func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudflare {
 	if err2 != nil {
 		log.Println("nope on lookupIP")
 	}
-
-	// enabledipv4 := false
-	// enabledipv6 := false
-	// for _, x := range ips {
-	// 	if x.To4() != nil {
-	// 		for cidrsipv4.Scan() {
-	// 			//log.Println("scanning for ipv4")
-	// 			_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
-	// 			if cidrsparse.Contains(x) {
-	// 				//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
-	// 				enabledipv4 = true
-	// 			}
-
-	// 		}
-	// 	} else {
-	// 		for cidrsipv6.Scan() {
-	// 			_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
-	// 			if cidrsparse.Contains(x) {
-	// 				//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
-	// 				enabledipv6 = true
-	// 			}
-
-	// 		}
-	// 	}
-	// }
-
-	return &ProbeResultcloudflare{
-		Supported:     cidrContains(cidrsipv4, cidrsipv6, ips),
-		Supportedipv4: false, //not finished
-		Supportedipv6: false, //not finished
-		Err:           err2,
-		Name:          "cloudflare supported",
-	}
-}
-
-func cidrContains(cidrsipv4 *bufio.Scanner, cidrsipv6 *bufio.Scanner, ips []net.IP) bool {
+	enabledtotal := false
+	ipv4 := false
+	ipv6 := false
 	for _, x := range ips {
 		if x.To4() != nil {
 			for cidrsipv4.Scan() {
 				//log.Println("scanning for ipv4")
 				_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
 				if cidrsparse.Contains(x) {
-					//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
-					return true
+					log.Println("went thru ipv4", x)
+					enabledtotal = true
+					ipv4 = true
 				}
 
 			}
@@ -82,13 +50,25 @@ func cidrContains(cidrsipv4 *bufio.Scanner, cidrsipv6 *bufio.Scanner, ips []net.
 			for cidrsipv6.Scan() {
 				_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
 				if cidrsparse.Contains(x) {
-					//log.Println("oiasehjfuhefpweufgwoejfno;hjfvlosodhfpawusehfgawoehgp;owehfgoaeuhfguasdhfoasudhflo;sdfh")
-					return true
+					log.Println("went thru ipv6", x)
+					ipv4 = false
+					enabledtotal = true
+					ipv6 = true
+					log.Println(ipv6)
+
 				}
 
 			}
 		}
-
 	}
-	return false
+
+	//ipv6 returns false (good) but ipv4 doesn't
+	//fmt.Println(enabledtotal, ipv4, ipv6)
+	return &ProbeResultcloudflare{
+		Supported:     enabledtotal,
+		Supportedipv4: ipv4,
+		Supportedipv6: ipv6,
+		Err:           err,
+		Name:          "cloudflare supported",
+	}
 }
