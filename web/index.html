@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>IRM</title>
@@ -8,7 +9,7 @@
       function chart(data, datelabels, minilabel, chartID) {
         const ctx = document.getElementById(chartID).getContext('2d');
 
-        // All the charts have the same background colors.
+        // All the charts have the same color schemes.
         const backgroundColor = [
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -17,6 +18,21 @@
           'rgba(153, 102, 255, 0.2)',
           'rgba(255, 159, 64, 0.2)'
         ];
+        const borderColor = [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ];
+        const options = {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        };
 
         if (chartID == "Chart1") {
           const myChart = new Chart(ctx, {
@@ -28,39 +44,19 @@
                   label: "HTTP/1.1",
                   data: data[0],
                   backgroundColor: backgroundColor,
-                  borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                  ],
+                  borderColor: borderColor,
                   borderWidth: 1
                 },
                 {
                   label: "HTTP/2",
                   data: data[1],
                   backgroundColor: backgroundColor,
-                  borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                  ],
+                  borderColor: borderColor,
                   borderWidth: 1
                 }
               ]
             },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true
-                }
-              }
-            }
+            options: options
           });
         } else if (chartID == "Chart2") {
           const myChart = new Chart(ctx, {
@@ -72,76 +68,42 @@
                   label: "TLSv1.0",
                   data: data[0],
                   backgroundColor: backgroundColor,
-                  borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                  ],
+                  borderColor: borderColor,
                   borderWidth: 1
                 },
                 {
                   label: "TLSv1.1",
                   data: data[1],
                   backgroundColor: backgroundColor,
-                  borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                  ],
+                  borderColor: borderColor,
                   borderWidth: 1
                 },
                 {
                   label: "TLSv1.2",
                   data: data[2],
                   backgroundColor: backgroundColor,
-                  borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                  ],
+                  borderColor: borderColor,
                   borderWidth: 1
                 },
                 {
                   label: "TLSv1.3",
                   data: data[3],
                   backgroundColor: backgroundColor,
-                  borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                  ],
+                  borderColor: borderColor,
                   borderWidth: 1
                 }
               ]
             },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true
-                }
-              }
-            }
+            options: options
           });
         }
       }
 
       async function fetchDataHTTP() {
-        var jsondata = [];
+        const jsondata = [];
         const response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv')
 
-        let data = await response.text()
+        const data = await response.text()
         const vals = data.split('\n')
         for (let i = 1; i < vals.length-1; i++) {
           const row = vals[i].split(',');
@@ -153,10 +115,10 @@
           });
         }
 
-        let timelabel = [];
+        const timelabel = [];
 
-        var http = [[],[]];
-        var i = 0;
+        const http = [[],[]];
+        let i = 0;
         while (jsondata[i] != undefined) {
           timelabel.push(jsondata[i].timestapmp);
           http[0].push(jsondata[i].http11.replace("%",""));
@@ -168,10 +130,10 @@
       }
 
       async function fetchDataTLS() {
-        var jsondata = [];
+        const jsondata = [];
         const response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv');
 
-        let data = await response.text();
+        const data = await response.text();
         const vals = data.split('\n');
         for (let i = 1; i < vals.length-1; i++) {
           const row = vals[i].split(',');
@@ -184,9 +146,9 @@
           });
         }
 
-        let tls = [[],[],[],[]];
-        let time = [];
-        var i = 0;
+        const tls = [[],[],[],[]];
+        const time = [];
+        let i = 0;
         while (jsondata[i] != undefined) {
           time.push(jsondata[i].time);
           tls[0].push(jsondata[i].tls10.replace("%",""));
