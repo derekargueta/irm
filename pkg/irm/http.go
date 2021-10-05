@@ -90,3 +90,12 @@ func Sendcloudflareipv4() (*http.Response, error) {
 	request.Close = true
 	return client.Do(request)
 }
+func Sendflastlyprobe() (*http.Response, error) {
+	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	// TLS is required for public HTTP/2 services, so assume `https`.
+	request, _ := http.NewRequest("GET", "https://www.cloudflare.com/ips-v4", nil)
+	request.Close = true
+	return client.Do(request)
+}
