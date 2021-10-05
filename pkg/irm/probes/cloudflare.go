@@ -12,9 +12,12 @@ import (
  * Checks if the domain supports cloudflare.
  */
 
-type Cloudflareprobe struct{}
+type Cloudflareprobe struct {
+	ipv4 []string
+	ipv6 []string
+}
 
-func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudflare {
+func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudfast {
 	cidrsurlipv6, err := irm.Sendcloudflareipv6()
 	cidrsurlipv4, err2 := irm.Sendcloudflareipv4()
 	if err != nil {
@@ -64,7 +67,7 @@ func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudflare {
 
 	//ipv6 returns false (good) but ipv4 doesn't
 	//fmt.Println(enabledtotal, ipv4, ipv6)
-	return &ProbeResultcloudflare{
+	return &ProbeResultcloudfast{
 		Supported:     enabledtotal,
 		Supportedipv4: ipv4,
 		Supportedipv6: ipv6,

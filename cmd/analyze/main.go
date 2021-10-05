@@ -3,8 +3,10 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -13,6 +15,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
 
 	"github.com/derekargueta/irm/pkg/util"
@@ -34,6 +37,9 @@ type ProbeResult struct {
 	cloudflare        bool
 	cloudflareipv4    bool
 	cloudflareipv6    bool
+	fastlyprobe       bool
+	fastlyprobeipv4   bool
+	fastlyprobeipv6   bool
 }
 
 type TotalTestResult struct {
@@ -51,6 +57,9 @@ type TotalTestResult struct {
 	cloudflare        int
 	cloudflareipv4    int
 	cloudflareipv6    int
+	fastlyprobe       int
+	fastlyprobeipv4   int
+	fastlyprobeipv6   int
 }
 
 func (t *TotalTestResult) AddResult(result ProbeResult) {
@@ -96,6 +105,15 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 	}
 	if result.cloudflareipv6 {
 		t.cloudflareipv6 += 1
+	}
+	if result.fastlyprobe {
+		t.fastlyprobe += 1
+	}
+	if result.fastlyprobeipv4 {
+		t.fastlyprobeipv4 += 1
+	}
+	if result.fastlyprobeipv6 {
+		t.fastlyprobeipv6 += 1
 	}
 
 }
@@ -193,6 +211,10 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.cloudflareipv4 = Cloudflare.Supportedipv4
 	result.cloudflareipv6 = Cloudflare.Supportedipv6
 
+	Fastly := (&probes.Fastlyprobe{}).Run(myURL)
+	result.fastlyprobe = Fastly.Supported
+	result.fastlyprobeipv4 = Fastly.Supportedipv4
+	result.fastlyprobeipv6 = Fastly.Supportedipv6
 	return result
 }
 
@@ -213,6 +235,22 @@ func main() {
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
 	flag.StringVar(&singleDomain, "domain", "", "test single domain")
 	flag.Parse()
+
+	fastly, err := irm.Sendfastlyprobe()
+
+	if err != nil {
+		fmt.Println("no fastly")
+	}
+	reader, err := ioutil.ReadAll(fastly.Body)
+	if err != nil {
+		fmt.Println("cant read line")
+	}
+	//myprobes.Fastly = probes.Fastlyprobe{}
+
+	err = json.Unmarshal(reader, &probes.Fastlyprobe{})
+	if err != nil {
+		fmt.Println("cant marshal")
+	}
 
 	if singleDomain != "" {
 		test := filepathHTTP(singleDomain)
@@ -239,7 +277,12 @@ func main() {
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
 					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls13enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.cloudflare, domainsTested)),
+					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested)),
+					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested)),
+					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested)),
+					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested)),
+					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
+					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
 				}}
 			//added timer
 			//          TOKEN AUTHENTICATION
@@ -358,6 +401,9 @@ func main() {
 					fmt.Printf("cloudflares total enabled: %.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested))
 					fmt.Printf("cloudflares ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested))
 					fmt.Printf("cloudflares ipv6 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested))
+					fmt.Printf("fastlyprobe total enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested))
+					fmt.Printf("fastlyprobe ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested))
+					fmt.Printf("fastlyprobe ipv6 enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested))
 				}
 				os.Exit(0)
 			}

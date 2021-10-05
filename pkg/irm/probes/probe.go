@@ -5,7 +5,7 @@ type ProbeResult struct {
 	Err       error
 	Name      string
 }
-type ProbeResultcloudflare struct {
+type ProbeResultcloudfast struct {
 	Supported     bool
 	Supportedipv4 bool
 	Supportedipv6 bool
