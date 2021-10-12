@@ -16,7 +16,7 @@ type Cloudflareprobe struct {
 }
 
 //verify http request with ip
-func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudfast {
+func (h *Cloudflareprobe) Run(domain string) *ProbeResultCDN {
 	ips, err := net.LookupIP(domain)
 	if err != nil {
 		log.Println("nope on lookupIP")
@@ -26,7 +26,7 @@ func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudfast {
 	ipv6 := false
 	_, httperr := http.NewRequest("GET", domain, nil)
 	if httperr != nil {
-		return &ProbeResultcloudfast{
+		return &ProbeResultCDN{
 			Supported:     false,
 			Supportedipv4: false,
 			Supportedipv6: false,
@@ -64,7 +64,7 @@ func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudfast {
 
 	//ipv6 returns false (good) but ipv4 doesn't
 	//fmt.Println(enabledtotal, ipv4, ipv6)
-	return &ProbeResultcloudfast{
+	return &ProbeResultCDN{
 		Supported:     enabledtotal,
 		Supportedipv4: ipv4,
 		Supportedipv6: ipv6,

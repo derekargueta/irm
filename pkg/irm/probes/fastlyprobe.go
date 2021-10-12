@@ -19,7 +19,7 @@ type Fastlyprobe struct {
 	Ipv6_addresses_cidr []*net.IPNet
 }
 
-func (h *Fastlyprobe) Run(domain string) *ProbeResultcloudfast {
+func (h *Fastlyprobe) Run(domain string) *ProbeResultCDN {
 
 	ips, err := net.LookupIP(domain)
 	if err != nil {
@@ -31,7 +31,7 @@ func (h *Fastlyprobe) Run(domain string) *ProbeResultcloudfast {
 	ipv6 := false
 	_, httperr := http.NewRequest("GET", domain, nil)
 	if httperr != nil {
-		return &ProbeResultcloudfast{
+		return &ProbeResultCDN{
 			Supported:     false,
 			Supportedipv4: false,
 			Supportedipv6: false,
@@ -65,7 +65,7 @@ func (h *Fastlyprobe) Run(domain string) *ProbeResultcloudfast {
 		}
 	}
 
-	return &ProbeResultcloudfast{
+	return &ProbeResultCDN{
 		Supported:     enabledtotal,
 		Supportedipv4: ipv4,
 		Supportedipv6: ipv6,

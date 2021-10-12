@@ -5,8 +5,15 @@ type ProbeResult struct {
 	Err       error
 	Name      string
 }
-type ProbeResultcloudfast struct {
+type ProbeResultCDN struct {
 	Supported     bool
+	Supportedipv4 bool
+	Supportedipv6 bool
+	Err           error
+	Name          string
+}
+type TotalIpvProbe struct {
+	Dualstack     bool
 	Supportedipv4 bool
 	Supportedipv6 bool
 	Err           error

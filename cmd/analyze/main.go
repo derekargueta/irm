@@ -41,6 +41,9 @@ type ProbeResult struct {
 	fastlyprobe       bool
 	fastlyprobeipv4   bool
 	fastlyprobeipv6   bool
+	totalipv6         bool
+	totalipv4         bool
+	dualstack         bool
 }
 type TotalTestResult struct {
 	domainsTested     int
@@ -60,6 +63,9 @@ type TotalTestResult struct {
 	fastlyprobe       int
 	fastlyprobeipv4   int
 	fastlyprobeipv6   int
+	totalipv6         int
+	totalipv4         int
+	dualstack         int
 }
 
 func (t *TotalTestResult) AddResult(result ProbeResult) {
@@ -114,6 +120,15 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 	}
 	if result.fastlyprobeipv6 {
 		t.fastlyprobeipv6 += 1
+	}
+	if result.dualstack {
+		t.dualstack += 1
+	}
+	if result.totalipv4 {
+		t.totalipv4 += 1
+	}
+	if result.totalipv6 {
+		t.totalipv6 += 1
 	}
 
 }
@@ -216,6 +231,11 @@ func filepathHTTP(myURL string, cdn_fast *probes.Fastlyprobe, cdn_cloud *probes.
 	result.fastlyprobe = Fastly.Supported
 	result.fastlyprobeipv4 = Fastly.Supportedipv4
 	result.fastlyprobeipv6 = Fastly.Supportedipv6
+
+	ipvtotal := (&probes.Total_ipv{}).Run(myURL)
+	result.dualstack = ipvtotal.Dualstack
+	result.totalipv4 = ipvtotal.Supportedipv4
+	result.totalipv6 = ipvtotal.Supportedipv6
 	return result
 }
 
@@ -454,6 +474,9 @@ func main() {
 					fmt.Printf("fastlyprobe enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested))
 					fmt.Printf("fastlyprobe ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested))
 					fmt.Printf("fastlyprobe ipv6 enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested))
+					fmt.Printf("Dualstack enabled: %.2f%%\n", util.Percent(totalresults.dualstack, domainsTested))
+					fmt.Printf("Total Ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested))
+					fmt.Printf("Total Ipv6 enabled: %.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested))
 				}
 				os.Exit(0)
 			}
