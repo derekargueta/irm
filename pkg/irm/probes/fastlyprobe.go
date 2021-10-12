@@ -10,8 +10,11 @@ import (
  */
 
 type Fastlyprobe struct {
-	Addresses      []string `json:"addresses"`
+	Ipv4_addresses []string `json:"addresses"`
 	Ipv6_addresses []string `json:"ipv6_addresses"`
+
+	Ipv4_addresses_cidr []*net.IPNet
+	Ipv6_addresses_cidr []*net.IPNet
 }
 
 func (h *Fastlyprobe) Run(domain string) *ProbeResultcloudfast {
@@ -25,21 +28,18 @@ func (h *Fastlyprobe) Run(domain string) *ProbeResultcloudfast {
 	ipv6 := false
 	for _, x := range ips {
 		if x.To4() != nil {
-			for _, fastlyip := range h.Addresses {
-				log.Printf("scanning for ipv4")
-				_, cidrsparse, _ := net.ParseCIDR(fastlyip)
-				if cidrsparse.Contains(x) {
-					log.Println("went thru ipv4 on fastly", x)
+			for _, cidr := range h.Ipv4_addresses_cidr {
+				if cidr.Contains(x) {
+					log.Println("went thru ipv4", x)
 					enabledtotal = true
 					ipv4 = true
 				}
-
 			}
+
 		} else {
-			for _, fastlyip := range h.Ipv6_addresses {
-				_, cidrsparse, _ := net.ParseCIDR(string(fastlyip))
-				if cidrsparse.Contains(x) {
-					log.Println("went thru ipv6 on fastly ", x)
+			for _, cidr := range h.Ipv6_addresses_cidr {
+				if cidr.Contains(x) {
+					log.Println("went thru ipv6", x)
 					ipv4 = false
 					enabledtotal = true
 					ipv6 = true

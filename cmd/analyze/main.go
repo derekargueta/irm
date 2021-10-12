@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 
 	// "net/http"
@@ -131,6 +132,7 @@ const (
 func worker(input chan string, output chan ProbeResult) {
 	for x := range input {
 		output <- filepathHTTP(x)
+
 	}
 }
 
@@ -206,18 +208,84 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.tls13enabled = TLS13Result.Err != nil
 	result.tls13enabled = TLS13Result.Supported
 
-	Cloudflare := (&probes.Cloudflareprobe{}).Run(myURL)
+	Cloudflare := (mycloud()).Run(myURL)
 	result.cloudflare = Cloudflare.Supported
 	result.cloudflareipv4 = Cloudflare.Supportedipv4
 	result.cloudflareipv6 = Cloudflare.Supportedipv6
 
-	Fastly := (&probes.Fastlyprobe{}).Run(myURL)
+	Fastly := (myfast()).Run(myURL)
 	result.fastlyprobe = Fastly.Supported
 	result.fastlyprobeipv4 = Fastly.Supportedipv4
 	result.fastlyprobeipv6 = Fastly.Supportedipv6
 	return result
 }
+func myfast() *probes.Fastlyprobe {
+	fastly, err := irm.Sendfastlyprobe()
 
+	if err != nil {
+		fmt.Println("no fastly")
+	}
+	reader, err := ioutil.ReadAll(fastly.Body)
+	if err != nil {
+		fmt.Println("cant read line")
+	}
+	fast := probes.Fastlyprobe{}
+
+	err = json.Unmarshal(reader, &fast)
+	if err != nil {
+		fmt.Println("cant marshal")
+	}
+
+	count := 0
+	for _, x := range fast.Ipv4_addresses {
+		//log.Println("scanning for ipv4")
+		_, cidrsparse, _ := net.ParseCIDR(x)
+		fast.Ipv4_addresses_cidr[count] = cidrsparse
+		fmt.Println("in the loop")
+
+	}
+	count = 0
+	for _, x := range fast.Ipv6_addresses {
+		//log.Println("scanning for ipv4")
+		_, cidrsparse, _ := net.ParseCIDR(x)
+		fast.Ipv6_addresses_cidr[count] = cidrsparse
+
+	}
+	fmt.Println("out of fast")
+	return &fast
+
+}
+func mycloud() *probes.Cloudflareprobe {
+	cidrsurlipv6, err := irm.Sendcloudflareipv6()
+	cidrsurlipv4, err2 := irm.Sendcloudflareipv4()
+	if err != nil {
+		log.Println("nope on Sendcloudflareipv6")
+	}
+	if err2 != nil {
+		log.Println("nope on Sendcloudflareipv4")
+	}
+
+	cidrsipv6 := bufio.NewScanner(cidrsurlipv6.Body)
+	cidrsipv4 := bufio.NewScanner(cidrsurlipv4.Body)
+
+	cloud := probes.Cloudflareprobe{}
+
+	count := 0
+	for cidrsipv4.Scan() {
+		//log.Println("scanning for ipv4")
+		_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
+		cloud.Ipv4[count] = cidrsparse
+
+	}
+	count = 0
+	for cidrsipv4.Scan() {
+		//log.Println("scanning for ipv4")
+		_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
+		cloud.Ipv6[count] = cidrsparse
+
+	}
+	return &cloud
+}
 func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
 	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
@@ -235,22 +303,6 @@ func main() {
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
 	flag.StringVar(&singleDomain, "domain", "", "test single domain")
 	flag.Parse()
-
-	fastly, err := irm.Sendfastlyprobe()
-
-	if err != nil {
-		fmt.Println("no fastly")
-	}
-	reader, err := ioutil.ReadAll(fastly.Body)
-	if err != nil {
-		fmt.Println("cant read line")
-	}
-	//myprobes.Fastly = probes.Fastlyprobe{}
-
-	err = json.Unmarshal(reader, &probes.Fastlyprobe{})
-	if err != nil {
-		fmt.Println("cant marshal")
-	}
 
 	if singleDomain != "" {
 		test := filepathHTTP(singleDomain)
