@@ -3,6 +3,7 @@ package probes
 import (
 	"log"
 	"net"
+	"net/http"
 )
 
 /**
@@ -10,37 +11,50 @@ import (
  */
 
 type Cloudflareprobe struct {
-	Ipv4 []*net.IPNet
-	Ipv6 []*net.IPNet
+	Ipv4_cidr []*net.IPNet
+	Ipv6_cidr []*net.IPNet
 }
 
+//verify http request with ip
 func (h *Cloudflareprobe) Run(domain string) *ProbeResultcloudfast {
 	ips, err := net.LookupIP(domain)
 	if err != nil {
 		log.Println("nope on lookupIP")
 	}
-
 	enabledtotal := false
 	ipv4 := false
 	ipv6 := false
-	for _, x := range ips {
-		if x.To4() != nil {
-			for _, cidr := range h.Ipv4 {
-				if cidr.Contains(x) {
-					log.Println("went thru ipv4", x)
-					enabledtotal = true
+	_, httperr := http.NewRequest("GET", domain, nil)
+	if httperr != nil {
+		return &ProbeResultcloudfast{
+			Supported:     false,
+			Supportedipv4: false,
+			Supportedipv6: false,
+			Err:           err,
+			Name:          "cloudflare not supported",
+		}
+	}
+
+	for _, x := range ips { //sep dns
+
+		if x.To4() != nil { //is ipv4
+			for _, cidrsparse := range h.Ipv4_cidr {
+				if cidrsparse.Contains(x) {
+					//log.Println("went thru ipv4", x)
 					ipv4 = true
+					ipv6 = false
+					enabledtotal = true
 				}
 			}
 
 		} else {
-			for _, cidr := range h.Ipv6 {
-				if cidr.Contains(x) {
-					log.Println("went thru ipv6", x)
+			for _, cidrsparse := range h.Ipv6_cidr {
+				if cidrsparse.Contains(x) {
+					//log.Println("went thru ipv6", x)
+					ipv6 = true
 					ipv4 = false
 					enabledtotal = true
-					ipv6 = true
-					log.Println(ipv6)
+					//log.Println(ipv6)
 
 				}
 

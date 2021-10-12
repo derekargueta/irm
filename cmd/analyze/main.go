@@ -42,7 +42,6 @@ type ProbeResult struct {
 	fastlyprobeipv4   bool
 	fastlyprobeipv6   bool
 }
-
 type TotalTestResult struct {
 	domainsTested     int
 	http11enabled     int
@@ -61,6 +60,14 @@ type TotalTestResult struct {
 	fastlyprobe       int
 	fastlyprobeipv4   int
 	fastlyprobeipv6   int
+}
+
+type cdn_fast struct {
+	Ipv4_addresses []string `json:"addresses"`
+	Ipv6_addresses []string `json:"ipv6_addresses"`
+
+	Ipv4_addresses_cidr []*net.IPNet
+	Ipv6_addresses_cidr []*net.IPNet
 }
 
 func (t *TotalTestResult) AddResult(result ProbeResult) {
@@ -129,9 +136,9 @@ const (
 	http10SupportMsgString = "✅ %s supports HTTP/1.0\n"
 )
 
-func worker(input chan string, output chan ProbeResult) {
+func worker(input chan string, output chan ProbeResult, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe) {
 	for x := range input {
-		output <- filepathHTTP(x)
+		output <- filepathHTTP(x, &cdn_fast, &cdn_cloud)
 
 	}
 }
@@ -140,7 +147,7 @@ func worker(input chan string, output chan ProbeResult) {
 create listener to prevent tcp error
 instantiate before starting workers
 */
-func fileEntry(filepath string, workers int) TotalTestResult {
+func fileEntry(filepath string, workers int, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe) TotalTestResult {
 	domains, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -155,7 +162,7 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 
 	for x := 0; x < workers; x++ {
 		go func() {
-			worker(jobs, results)
+			worker(jobs, results, cdn_fast, cdn_cloud)
 		}()
 	}
 
@@ -181,7 +188,7 @@ func fileEntry(filepath string, workers int) TotalTestResult {
 	return totalresults
 }
 
-func filepathHTTP(myURL string) ProbeResult {
+func filepathHTTP(myURL string, cdn_fast *probes.Fastlyprobe, cdn_cloud *probes.Cloudflareprobe) ProbeResult {
 	result := ProbeResult{}
 
 	http2Result := (&probes.HTTP2Probe{}).Run(myURL)
@@ -208,17 +215,18 @@ func filepathHTTP(myURL string) ProbeResult {
 	result.tls13enabled = TLS13Result.Err != nil
 	result.tls13enabled = TLS13Result.Supported
 
-	Cloudflare := (mycloud()).Run(myURL)
+	Cloudflare := (cdn_cloud).Run(myURL)
 	result.cloudflare = Cloudflare.Supported
 	result.cloudflareipv4 = Cloudflare.Supportedipv4
 	result.cloudflareipv6 = Cloudflare.Supportedipv6
 
-	Fastly := (myfast()).Run(myURL)
+	Fastly := (cdn_fast).Run(myURL)
 	result.fastlyprobe = Fastly.Supported
 	result.fastlyprobeipv4 = Fastly.Supportedipv4
 	result.fastlyprobeipv6 = Fastly.Supportedipv6
 	return result
 }
+
 func myfast() *probes.Fastlyprobe {
 	fastly, err := irm.Sendfastlyprobe()
 
@@ -235,23 +243,20 @@ func myfast() *probes.Fastlyprobe {
 	if err != nil {
 		fmt.Println("cant marshal")
 	}
-
-	count := 0
 	for _, x := range fast.Ipv4_addresses {
 		//log.Println("scanning for ipv4")
 		_, cidrsparse, _ := net.ParseCIDR(x)
-		fast.Ipv4_addresses_cidr[count] = cidrsparse
-		fmt.Println("in the loop")
+		fast.Ipv4_addresses_cidr = append(fast.Ipv4_addresses_cidr, cidrsparse)
 
 	}
-	count = 0
+
 	for _, x := range fast.Ipv6_addresses {
 		//log.Println("scanning for ipv4")
 		_, cidrsparse, _ := net.ParseCIDR(x)
-		fast.Ipv6_addresses_cidr[count] = cidrsparse
+		fast.Ipv6_addresses_cidr = append(fast.Ipv6_addresses_cidr, cidrsparse)
 
 	}
-	fmt.Println("out of fast")
+	fmt.Println("run fast")
 	return &fast
 
 }
@@ -270,20 +275,19 @@ func mycloud() *probes.Cloudflareprobe {
 
 	cloud := probes.Cloudflareprobe{}
 
-	count := 0
 	for cidrsipv4.Scan() {
 		//log.Println("scanning for ipv4")
 		_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
-		cloud.Ipv4[count] = cidrsparse
-
+		cloud.Ipv4_cidr = append(cloud.Ipv4_cidr, cidrsparse)
+		//fmt.Println("run")
 	}
-	count = 0
-	for cidrsipv4.Scan() {
+	for cidrsipv6.Scan() {
 		//log.Println("scanning for ipv4")
 		_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
-		cloud.Ipv6[count] = cidrsparse
+		cloud.Ipv6_cidr = append(cloud.Ipv6_cidr, cidrsparse)
 
 	}
+	fmt.Println("cloud run")
 	return &cloud
 }
 func main() {
@@ -304,8 +308,10 @@ func main() {
 	flag.StringVar(&singleDomain, "domain", "", "test single domain")
 	flag.Parse()
 
+	cdn_fast := myfast()
+	cdn_cloud := mycloud()
 	if singleDomain != "" {
-		test := filepathHTTP(singleDomain)
+		test := filepathHTTP(singleDomain, cdn_fast, cdn_cloud)
 		fmt.Printf("HTTP/1.1: %t \nHTTP/1.2: %t \nTLSv1.0: %t \nTLSv1.1: %t \nTLSv1.2: %t \nTLSv1.3: %t\n", test.http11enabled, test.http11enabled, test.tls10enabled, test.tls11enabled, test.tls12enabled, test.tls13enabled)
 		os.Exit(0)
 	}
@@ -315,7 +321,7 @@ func main() {
 	} else {
 		for {
 			timer := time.Now()
-			totalresults := fileEntry(filepath, numWorkers)
+			totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud)
 			testDuration := time.Since(timer).Seconds()
 			domainsTested := totalresults.domainsTested
 			data := [][]string{
@@ -450,10 +456,10 @@ func main() {
 					fmt.Printf("TLSv1.1 enabled: %.2f%%\n", util.Percent(totalresults.tls11enabled, domainsTested))
 					fmt.Printf("TLSv1.2 enabled: %.2f%%\n", util.Percent(totalresults.tls12enabled, domainsTested))
 					fmt.Printf("TLSv1.3 enabled: %.2f%%\n", util.Percent(totalresults.tls13enabled, domainsTested))
-					fmt.Printf("cloudflares total enabled: %.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested))
+					fmt.Printf("cloudflares enabled: %.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested))
 					fmt.Printf("cloudflares ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested))
 					fmt.Printf("cloudflares ipv6 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested))
-					fmt.Printf("fastlyprobe total enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested))
+					fmt.Printf("fastlyprobe enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested))
 					fmt.Printf("fastlyprobe ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested))
 					fmt.Printf("fastlyprobe ipv6 enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested))
 				}
