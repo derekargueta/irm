@@ -62,14 +62,6 @@ type TotalTestResult struct {
 	fastlyprobeipv6   int
 }
 
-type cdn_fast struct {
-	Ipv4_addresses []string `json:"addresses"`
-	Ipv6_addresses []string `json:"ipv6_addresses"`
-
-	Ipv4_addresses_cidr []*net.IPNet
-	Ipv6_addresses_cidr []*net.IPNet
-}
-
 func (t *TotalTestResult) AddResult(result ProbeResult) {
 	t.domainsTested += 1
 
