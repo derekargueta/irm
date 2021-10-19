@@ -44,6 +44,7 @@ type ProbeResult struct {
 	totalipv6         bool
 	totalipv4         bool
 	dualstack         bool
+	dnsany            bool
 }
 type TotalTestResult struct {
 	domainsTested     int
@@ -66,6 +67,7 @@ type TotalTestResult struct {
 	totalipv6         int
 	totalipv4         int
 	dualstack         int
+	dnsany            int
 }
 
 func (t *TotalTestResult) AddResult(result ProbeResult) {
@@ -129,6 +131,9 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 	}
 	if result.totalipv6 {
 		t.totalipv6 += 1
+	}
+	if result.dnsany {
+		t.dnsany += 1
 	}
 
 }
@@ -236,6 +241,9 @@ func filepathHTTP(myURL string, cdn_fast *probes.Fastlyprobe, cdn_cloud *probes.
 	result.dualstack = ipvtotal.Dualstack
 	result.totalipv4 = ipvtotal.Supportedipv4
 	result.totalipv6 = ipvtotal.Supportedipv6
+
+	anydns := (&probes.Dns_any{}).Run(myURL)
+	result.dnsany = anydns.Supported
 	return result
 }
 
@@ -477,6 +485,8 @@ func main() {
 					fmt.Printf("Dualstack enabled: %.2f%%\n", util.Percent(totalresults.dualstack, domainsTested))
 					fmt.Printf("Total Ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested))
 					fmt.Printf("Total Ipv6 enabled: %.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested))
+					fmt.Printf("DNS ANY query responses: %.2f%%\n", util.Percent(totalresults.dnsany, domainsTested))
+
 				}
 				os.Exit(0)
 			}
