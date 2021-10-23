@@ -339,67 +339,117 @@ func main() {
 	if filepath == "" {
 		log.Fatal("Must specify -filepath or -domain")
 	} else {
-		for {
-			timer := time.Now()
-			totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud)
-			testDuration := time.Since(timer).Seconds()
-			domainsTested := totalresults.domainsTested
-			data := [][]string{
-				{time.Now().Format("2006-01-02 15:04:05"),
-					fmt.Sprintf("%d", totalresults.domainsTested),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
-					fmt.Sprintf("%.2fs", testDuration),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls10enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls13enabled, domainsTested)),
-					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested)),
-					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested)),
-					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested)),
-					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested)),
-					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
-					fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
-				}}
-			//added timer
-			//          TOKEN AUTHENTICATION
+		//for {
+		timer := time.Now()
+		totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud)
+		testDuration := time.Since(timer).Seconds()
+		domainsTested := totalresults.domainsTested
+		data := [][]string{
+			{time.Now().Format("2006-01-02 15:04:05"),
+				fmt.Sprintf("%d", totalresults.domainsTested),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
+				fmt.Sprintf("%.2fs", testDuration),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls10enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls13enabled, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
+			}}
+		//added timer
+		//          TOKEN AUTHENTICATION
 
-			/*
-				_, plainerr := git.PlainClone("./tempirmdata/irm-data", false, &git.CloneOptions{
-					Auth: &http.BasicAuth{
-						Username: "123",
-						Password: password,
-					},
-					URL:      "https://github.com/derekargueta/irm-data",
+		/*
+			_, plainerr := git.PlainClone("./tempirmdata/irm-data", false, &git.CloneOptions{
+				Auth: &http.BasicAuth{
+					Username: "123",
+					Password: password,
+				},
+				URL:      "https://github.com/derekargueta/irm-data",
+				Progress: os.Stdout,
+			})
+		*/
+
+		//	         SHH Authentication
+
+		if enableGit == 1 {
+			os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
+			publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
+			if err != nil {
+				log.Printf("generate publickeys failed: %s\n", err.Error())
+			}
+			checkFile, err := os.Open(filepathexport)
+			if err != nil {
+				_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
+					Auth:     publicKeys,
+					URL:      "git@github.com:derekargueta/irm-data.git",
 					Progress: os.Stdout,
 				})
-			*/
 
-			//	         SHH Authentication
+				log.Println("in process of cloning")
 
-			if enableGit == 1 {
-				os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
-				publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
-				if err != nil {
-					log.Printf("generate publickeys failed: %s\n", err.Error())
+				if plainerr != nil {
+					log.Printf("cant clone : %s", plainerr)
 				}
-				checkFile, err := os.Open(filepathexport)
-				if err != nil {
-					_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
-						Auth:     publicKeys,
-						URL:      "git@github.com:derekargueta/irm-data.git",
-						Progress: os.Stdout,
-					})
+			}
+			checkFile.Close()
 
-					log.Println("in process of cloning")
+			file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+			if err != nil {
+				log.Println(err.Error() + "cant open results in tempirmdata")
+			}
 
-					if plainerr != nil {
-						log.Printf("cant clone : %s", plainerr)
-					}
-				}
-				checkFile.Close()
+			writer := csv.NewWriter(file)
 
+			for _, value := range data {
+				writer.Write(value)
+				log.Println(value)
+			}
+			writer.Flush()
+			log.Println(writer.Error())
+			file.Close()
+			fmt.Println("Done")
+
+			//       patck this value over time.h 4
+			repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
+			if mrr != nil {
+				log.Println("cant open dir")
+			}
+			tree, mmrr := repo.Worktree()
+			fmt.Println(tree.Status())
+			if mmrr != nil {
+				log.Println(err)
+			}
+
+			_, err = tree.Add("results.csv")
+			if err != nil {
+				log.Println("doesn't exist")
+			} else {
+				log.Println("exists")
+			}
+			_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
+				Author: &object.Signature{
+					Name:  "H",
+					Email: "t",
+					When:  time.Now(),
+				},
+			})
+			if err != nil {
+				log.Println("commit not working properly")
+			}
+			mrr = repo.Push(&git.PushOptions{
+				RemoteName: "origin",
+				Auth:       publicKeys,
+			})
+			log.Printf("errors that happened: %s", mrr)
+		} else {
+			if filepathexport != "" {
 				file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
 				if err != nil {
 					log.Println(err.Error() + "cant open results in tempirmdata")
@@ -412,87 +462,37 @@ func main() {
 					log.Println(value)
 				}
 				writer.Flush()
-				log.Println(writer.Error())
+				if err := writer.Error(); err != nil {
+					log.Println(err.Error())
+				}
 				file.Close()
-				fmt.Println("Done")
-
-				//       patck this value over time.h 4
-				repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
-				if mrr != nil {
-					log.Println("cant open dir")
-				}
-				tree, mmrr := repo.Worktree()
-				fmt.Println(tree.Status())
-				if mmrr != nil {
-					log.Println(err)
-				}
-
-				_, err = tree.Add("results.csv")
-				if err != nil {
-					log.Println("doesn't exist")
-				} else {
-					log.Println("exists")
-				}
-				_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
-					Author: &object.Signature{
-						Name:  "H",
-						Email: "t",
-						When:  time.Now(),
-					},
-				})
-				if err != nil {
-					log.Println("commit not working properly")
-				}
-				mrr = repo.Push(&git.PushOptions{
-					RemoteName: "origin",
-					Auth:       publicKeys,
-				})
-				log.Printf("errors that happened: %s", mrr)
+				fmt.Printf("test results written to %s\n", filepathexport)
 			} else {
-				if filepathexport != "" {
-					file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
-					if err != nil {
-						log.Println(err.Error() + "cant open results in tempirmdata")
-					}
+				fmt.Printf("Test Duration: %.2fs\n", testDuration)
+				fmt.Printf("Success Rate: %.2f%%\n", util.Percent((domainsTested-totalresults.erroroccured), domainsTested))
+				fmt.Printf("HTTP/1.1 enabled: %.2f%% \n", util.Percent(totalresults.http11enabled, domainsTested))
+				fmt.Printf("HTTP/1.2 enabled: %.2f%%\n", util.Percent(totalresults.http2enabled, domainsTested))
+				fmt.Printf("TLSv1.0 enabled: %.2f%%\n", util.Percent(totalresults.tls10enabled, domainsTested))
+				fmt.Printf("TLSv1.1 enabled: %.2f%%\n", util.Percent(totalresults.tls11enabled, domainsTested))
+				fmt.Printf("TLSv1.2 enabled: %.2f%%\n", util.Percent(totalresults.tls12enabled, domainsTested))
+				fmt.Printf("TLSv1.3 enabled: %.2f%%\n", util.Percent(totalresults.tls13enabled, domainsTested))
+				fmt.Printf("cloudflares enabled: %.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested))
+				fmt.Printf("cloudflares ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested))
+				fmt.Printf("cloudflares ipv6 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested))
+				fmt.Printf("fastlyprobe enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested))
+				fmt.Printf("fastlyprobe ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested))
+				fmt.Printf("fastlyprobe ipv6 enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested))
+				fmt.Printf("Dualstack enabled: %.2f%%\n", util.Percent(totalresults.dualstack, domainsTested))
+				fmt.Printf("Total Ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested))
+				fmt.Printf("Total Ipv6 enabled: %.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested))
+				fmt.Printf("DNS ANY query responses: %.2f%%\n", util.Percent(totalresults.dnsany, domainsTested))
 
-					writer := csv.NewWriter(file)
-
-					for _, value := range data {
-						writer.Write(value)
-						log.Println(value)
-					}
-					writer.Flush()
-					if err := writer.Error(); err != nil {
-						log.Println(err.Error())
-					}
-					file.Close()
-					fmt.Printf("test results written to %s\n", filepathexport)
-				} else {
-					fmt.Printf("Test Duration: %.2fs\n", testDuration)
-					fmt.Printf("Success Rate: %.2f%%\n", util.Percent((domainsTested-totalresults.erroroccured), domainsTested))
-					fmt.Printf("HTTP/1.1 enabled: %.2f%% \n", util.Percent(totalresults.http11enabled, domainsTested))
-					fmt.Printf("HTTP/1.2 enabled: %.2f%%\n", util.Percent(totalresults.http2enabled, domainsTested))
-					fmt.Printf("TLSv1.0 enabled: %.2f%%\n", util.Percent(totalresults.tls10enabled, domainsTested))
-					fmt.Printf("TLSv1.1 enabled: %.2f%%\n", util.Percent(totalresults.tls11enabled, domainsTested))
-					fmt.Printf("TLSv1.2 enabled: %.2f%%\n", util.Percent(totalresults.tls12enabled, domainsTested))
-					fmt.Printf("TLSv1.3 enabled: %.2f%%\n", util.Percent(totalresults.tls13enabled, domainsTested))
-					fmt.Printf("cloudflares enabled: %.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested))
-					fmt.Printf("cloudflares ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested))
-					fmt.Printf("cloudflares ipv6 enabled: %.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested))
-					fmt.Printf("fastlyprobe enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested))
-					fmt.Printf("fastlyprobe ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested))
-					fmt.Printf("fastlyprobe ipv6 enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested))
-					fmt.Printf("Dualstack enabled: %.2f%%\n", util.Percent(totalresults.dualstack, domainsTested))
-					fmt.Printf("Total Ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested))
-					fmt.Printf("Total Ipv6 enabled: %.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested))
-					fmt.Printf("DNS ANY query responses: %.2f%%\n", util.Percent(totalresults.dnsany, domainsTested))
-
-				}
-				os.Exit(0)
 			}
-
-			log.Printf("sleeping for %d seconds\b", timebetrun)
-			time.Sleep(time.Duration(timebetrun) * time.Second)
+			os.Exit(0)
 		}
+
+		log.Printf("sleeping for %d seconds\b", timebetrun)
+		time.Sleep(time.Duration(timebetrun) * time.Second)
+		//}
 	}
 }

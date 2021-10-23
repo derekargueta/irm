@@ -96,6 +96,38 @@
             },
             options: options
           });
+        }else if (chartID == "Chart3") {
+          const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: datelabels,
+              datasets: [
+                {
+                  label: "Cloudflare total",
+                  data: data[0],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                {
+                  label: "Cloudflare ipv6",
+                  data: data[0],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                {
+                  label: "Cloudflare ipv4",
+                  data: data[0],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                
+              ]
+            },
+            options: options
+          });
         }
       }
 

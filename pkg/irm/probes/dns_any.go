@@ -3,7 +3,6 @@ package probes
 import (
 	"fmt"
 	"net"
-	"strings"
 
 	"github.com/miekg/dns"
 )
@@ -19,21 +18,33 @@ type Dns_any struct {
 
 //verify http request with ip
 func (h *Dns_any) Run(domain string) *ProbeResult {
+	client := new(dns.Client)
 	ah := false
-	m := new(dns.Msg)
-	m.SetQuestion(dns.Fqdn(domain), dns.TypeANY)
-
-	in, err := dns.Exchange(m, "1.1.1.1:53")
+	nameserver, err := net.LookupNS(domain)
 	if err != nil {
-		fmt.Println(err)
-	} else {
-		yes := in.String()
-		ah = strings.Contains(yes, "NOTIMP")
-		/*
-			if true, means dns query is blocked
-		*/
-
+		fmt.Println("cant return name server")
 	}
+	for _, x := range nameserver {
+		m := new(dns.Msg)
+		m.SetQuestion(dns.Fqdn(domain), dns.TypeANY)
+		in, time, err := client.Exchange(m, x.Host+":53")
+		fmt.Println(x.Host)
+		if err != nil {
+			fmt.Println("on exchange", err)
+		} else {
+			yes := in.String()
+			fmt.Println(yes)
+			fmt.Println(time)
+			/*
+				if true, means dns query is blocked
+			*/
+			if ah == true {
+				break
+			}
+
+		}
+	}
+	fmt.Println(ah)
 
 	return &ProbeResult{
 		Supported: !ah, //if false, means dns didnt respond to query

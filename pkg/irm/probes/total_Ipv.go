@@ -17,6 +17,8 @@ func (h *Total_ipv) Run(domain string) *TotalIpvProbe {
 	ipv4 := false
 	ipv6 := false
 	request, err := net.LookupIP(domain)
+
+	
 	_, httperr := http.NewRequest("GET", domain, nil)
 	if httperr != nil {
 		return &TotalIpvProbe{
