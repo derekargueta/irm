@@ -361,6 +361,10 @@ func main() {
 				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested)),
 				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
 				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.dualstack, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested)),
+				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.dnsany, domainsTested)),
 			}}
 		//added timer
 		//          TOKEN AUTHENTICATION
@@ -379,8 +383,8 @@ func main() {
 		//	         SHH Authentication
 
 		if enableGit == 1 {
-			os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
-			publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
+			os.Setenv("SSH_KNOWN_HOSTS", "/app/.ssh/known_hosts")
+			publicKeys, err := ssh.NewPublicKeysFromFile("git", "/app/.ssh/id_ed25519", "") //
 			if err != nil {
 				log.Printf("generate publickeys failed: %s\n", err.Error())
 			}
