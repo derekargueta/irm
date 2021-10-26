@@ -3,6 +3,7 @@ package probes
 import (
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/miekg/dns"
 )
@@ -33,8 +34,10 @@ func (h *Dns_any) Run(domain string) *ProbeResult {
 			fmt.Println("on exchange", err)
 		} else {
 			yes := in.String()
-			fmt.Println(yes)
-			fmt.Println(time)
+			if strings.Contains(yes, "RFC8482") {
+				ah = true
+				fmt.Println(time)
+			}
 			/*
 				if true, means dns query is blocked
 			*/
@@ -44,6 +47,7 @@ func (h *Dns_any) Run(domain string) *ProbeResult {
 
 		}
 	}
+
 	fmt.Println(ah)
 
 	return &ProbeResult{
