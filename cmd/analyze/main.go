@@ -21,6 +21,7 @@ import (
 
 	"github.com/derekargueta/irm/pkg/util"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
@@ -382,75 +383,77 @@ func main() {
 		//	         SHH Authentication
 
 		if enableGit == 1 {
-			os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
-			publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
-			if err != nil {
-				log.Printf("generate publickeys failed: %s\n", err.Error())
-			}
-			checkFile, err := os.Open(filepathexport)
-			if err != nil {
-				_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
-					Auth:     publicKeys,
-					URL:      "git@github.com:derekargueta/irm-data.git",
-					Progress: os.Stdout,
-				})
-
-				log.Println("in process of cloning")
-
-				if plainerr != nil {
-					log.Printf("cant clone : %s", plainerr)
+			for {
+				os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
+				publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
+				if err != nil {
+					log.Printf("generate publickeys failed: %s\n", err.Error())
 				}
+				checkFile, err := os.Open(filepathexport)
+				if err != nil {
+					_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
+						Auth:     publicKeys,
+						URL:      "git@github.com:derekargueta/irm-data.git",
+						Progress: os.Stdout,
+					})
+
+					log.Println("in process of cloning")
+
+					if plainerr != nil {
+						log.Printf("cant clone : %s", plainerr)
+					}
+				}
+				checkFile.Close()
+
+				file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+				if err != nil {
+					log.Println(err.Error() + "cant open results in tempirmdata")
+				}
+
+				writer := csv.NewWriter(file)
+
+				for _, value := range data {
+					writer.Write(value)
+					log.Println(value)
+				}
+				writer.Flush()
+				log.Println(writer.Error())
+				file.Close()
+				fmt.Println("Done")
+
+				//     patck this value over time.h 4
+				repo, mrr := git.PlainOpen("/app/tempirmdata/") // checkFile.Close()
+				if mrr != nil {
+					log.Println("cant open dir")
+				}
+				tree, mmrr := repo.Worktree()
+				fmt.Println(tree.Status())
+				if mmrr != nil {
+					log.Println(err)
+				}
+
+				_, err = tree.Add("results.csv")
+				if err != nil {
+					log.Println("doesn't exist")
+				} else {
+					log.Println("exists")
+				}
+				_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
+					Author: &object.Signature{
+						Name:  "H",
+						Email: "t",
+						When:  time.Now(),
+					},
+				})
+				if err != nil {
+					log.Println("commit not working properly")
+				}
+				mrr = repo.Push(&git.PushOptions{
+					RemoteName: "origin",
+					Auth:       publicKeys,
+				})
+				log.Printf("errors that happened: %s", mrr)
 			}
-			checkFile.Close()
-
-			file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
-			if err != nil {
-				log.Println(err.Error() + "cant open results in tempirmdata")
-			}
-
-			writer := csv.NewWriter(file)
-
-			for _, value := range data {
-				writer.Write(value)
-				log.Println(value)
-			}
-			writer.Flush()
-			log.Println(writer.Error())
-			file.Close()
-			fmt.Println("Done")
-
-			//       patck this value over time.h 4
-			// repo, mrr := git.PlainOpen("/app/tempirmdata/") // checkFile.Close()
-			// if mrr != nil {
-			// 	log.Println("cant open dir")
-			// }
-			// tree, mmrr := repo.Worktree()
-			// fmt.Println(tree.Status())
-			// if mmrr != nil {
-			// 	log.Println(err)
-			// }
-
-			// _, err = tree.Add("results.csv")
-			// if err != nil {
-			// 	log.Println("doesn't exist")
-			// } else {
-			// 	log.Println("exists")
-			// }
-			// _, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
-			// 	Author: &object.Signature{
-			// 		Name:  "H",
-			// 		Email: "t",
-			// 		When:  time.Now(),
-			// 	},
-			// })
-			// if err != nil {
-			// 	log.Println("commit not working properly")
-			// }
-			// mrr = repo.Push(&git.PushOptions{
-			// 	RemoteName: "origin",
-			// 	Auth:       publicKeys,
-			// })
-			//log.Printf("errors that happened: %s", mrr)
 		} else {
 			if filepathexport != "" {
 				file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
