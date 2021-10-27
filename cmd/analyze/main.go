@@ -21,7 +21,6 @@ import (
 
 	"github.com/derekargueta/irm/pkg/util"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
@@ -355,16 +354,16 @@ func main() {
 				fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls11enabled, domainsTested)),
 				fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls12enabled, domainsTested)),
 				fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls13enabled, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflare, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv4, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.cloudflareipv6, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.dualstack, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested)),
-				fmt.Sprintf("%.2f%%\n", util.Percent(totalresults.dnsany, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.cloudflare, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.cloudflareipv4, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.cloudflareipv6, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobe, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.dualstack, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv4, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv6, domainsTested)),
+				fmt.Sprintf("%.2f%%", util.Percent(totalresults.dnsany, domainsTested)),
 			}}
 		//added timer
 		//          TOKEN AUTHENTICATION
@@ -383,8 +382,8 @@ func main() {
 		//	         SHH Authentication
 
 		if enableGit == 1 {
-			os.Setenv("SSH_KNOWN_HOSTS", "/app/.ssh/known_hosts")
-			publicKeys, err := ssh.NewPublicKeysFromFile("git", "/app/.ssh/id_ed25519", "") //
+			os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
+			publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
 			if err != nil {
 				log.Printf("generate publickeys failed: %s\n", err.Error())
 			}
@@ -404,7 +403,7 @@ func main() {
 			}
 			checkFile.Close()
 
-			file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
+			file, err := os.OpenFile("/app/tempirmdata/results.csv", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
 			if err != nil {
 				log.Println(err.Error() + "cant open results in tempirmdata")
 			}
@@ -421,37 +420,37 @@ func main() {
 			fmt.Println("Done")
 
 			//       patck this value over time.h 4
-			repo, mrr := git.PlainOpen("/app/tempirmdata") // checkFile.Close()
-			if mrr != nil {
-				log.Println("cant open dir")
-			}
-			tree, mmrr := repo.Worktree()
-			fmt.Println(tree.Status())
-			if mmrr != nil {
-				log.Println(err)
-			}
+			// repo, mrr := git.PlainOpen("/app/tempirmdata/") // checkFile.Close()
+			// if mrr != nil {
+			// 	log.Println("cant open dir")
+			// }
+			// tree, mmrr := repo.Worktree()
+			// fmt.Println(tree.Status())
+			// if mmrr != nil {
+			// 	log.Println(err)
+			// }
 
-			_, err = tree.Add("results.csv")
-			if err != nil {
-				log.Println("doesn't exist")
-			} else {
-				log.Println("exists")
-			}
-			_, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
-				Author: &object.Signature{
-					Name:  "H",
-					Email: "t",
-					When:  time.Now(),
-				},
-			})
-			if err != nil {
-				log.Println("commit not working properly")
-			}
-			mrr = repo.Push(&git.PushOptions{
-				RemoteName: "origin",
-				Auth:       publicKeys,
-			})
-			log.Printf("errors that happened: %s", mrr)
+			// _, err = tree.Add("results.csv")
+			// if err != nil {
+			// 	log.Println("doesn't exist")
+			// } else {
+			// 	log.Println("exists")
+			// }
+			// _, err = tree.Commit(time.Now().Format("2006-01-02 15:04:05"), &git.CommitOptions{All: true,
+			// 	Author: &object.Signature{
+			// 		Name:  "H",
+			// 		Email: "t",
+			// 		When:  time.Now(),
+			// 	},
+			// })
+			// if err != nil {
+			// 	log.Println("commit not working properly")
+			// }
+			// mrr = repo.Push(&git.PushOptions{
+			// 	RemoteName: "origin",
+			// 	Auth:       publicKeys,
+			// })
+			//log.Printf("errors that happened: %s", mrr)
 		} else {
 			if filepathexport != "" {
 				file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
