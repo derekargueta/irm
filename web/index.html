@@ -103,14 +103,7 @@
               labels: datelabels,
               datasets: [
                 {
-                  label: "Cloudflare total",
-                  data: data[0],
-                  backgroundColor: backgroundColor,
-                  borderColor: borderColor,
-                  borderWidth: 1
-                },
-                {
-                  label: "Cloudflare ipv6",
+                  label: "Cloudflare Total",
                   data: data[0],
                   backgroundColor: backgroundColor,
                   borderColor: borderColor,
@@ -118,12 +111,100 @@
                 },
                 {
                   label: "Cloudflare ipv4",
-                  data: data[0],
+                  data: data[1],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                {
+                  label: "Cloudflare ipv6",
+                  data: data[2],
                   backgroundColor: backgroundColor,
                   borderColor: borderColor,
                   borderWidth: 1
                 },
                 
+              ]
+            },
+            options: options
+          });
+        }else if (chartID == "Chart4") {
+          const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: datelabels,
+              datasets: [
+                {
+                  label: "Fastly Total",
+                  data: data[0],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                {
+                  label: "Fastly ipv4",
+                  data: data[1],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                {
+                  label: "Fastly ipv6",
+                  data: data[2],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                
+              ]
+            },
+            options: options
+          });
+        }else if (chartID == "Chart5") {
+          const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: datelabels,
+              datasets: [
+                {
+                  label: "Dualstack",
+                  data: data[0],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                {
+                  label: "Ipv4",
+                  data: data[1],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                {
+                  label: "Ipv6",
+                  data: data[2],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                },
+                
+              ]
+            },
+            options: options
+          });
+        }else if (chartID == "Chart6") {
+          const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: datelabels,
+              datasets: [
+                {
+                  label: "DNS ANY",
+                  data: data[0],
+                  backgroundColor: backgroundColor,
+                  borderColor: borderColor,
+                  borderWidth: 1
+                }, 
               ]
             },
             options: options
@@ -191,9 +272,127 @@
 
         chart(tls, time, "% of TLS Websites", "Chart2");
       }
+      async function fetchdataCloudflare() {
+        const jsondata = [];
+        const response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv');
 
+        const data = await response.text();
+        const vals = data.split('\n');
+        for (let i = 1; i < vals.length-1; i++) {
+          const row = vals[i].split(',');
+          jsondata.push({
+            time: row[0],
+            cloud : row[10],
+            cloudipv4 : row[11],
+            cloudipv6 : row[12],
+          });
+        }
+
+        const cloud = [[],[],[]];
+        const time = [];
+        let i = 0;
+        while (jsondata[i] != undefined) {
+          time.push(jsondata[i].time);
+          cloud[0].push(jsondata[i].cloud.replace("%",""));
+          cloud[1].push(jsondata[i].cloudipv4.replace("%",""));
+          cloud[2].push(jsondata[i].cloudipv6.replace("%",""));
+          i++;
+        }
+
+        chart(cloud, time, "% of Cloudflare support", "Chart3");
+      }
+
+      async function fetchdataFastly() {
+        const jsondata = [];
+        const response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv');
+
+        const data = await response.text();
+        const vals = data.split('\n');
+        for (let i = 1; i < vals.length-1; i++) {
+          const row = vals[i].split(',');
+          jsondata.push({
+            time: row[0],
+            fastly : row[13],
+            fastlyipv4 : row[14],
+            fastlyipv6 : row[15],
+          });
+        }
+
+        const fastly = [[],[],[]];
+        const time = [];
+        let i = 0;
+        while (jsondata[i] != undefined) {
+          time.push(jsondata[i].time);
+          fastly[0].push(jsondata[i].fastly.replace("%",""));
+          fastly[1].push(jsondata[i].fastlyipv4.replace("%",""));
+          fastly[2].push(jsondata[i].fastlyipv6.replace("%",""));
+          i++;
+        }
+
+        chart(fastly, time, "% of Cloudflare support", "Chart4");
+      }
+
+      
+      async function totalipv() {
+        const jsondata = [];
+        const response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv');
+
+        const data = await response.text();
+        const vals = data.split('\n');
+        for (let i = 1; i < vals.length-1; i++) {
+          const row = vals[i].split(',');
+          jsondata.push({
+            time: row[0],
+            ipvtotal : row[16],
+            ipv4 : row[17],
+            ipv6 : row[18],
+          });
+        }
+
+        const ipv = [[],[],[]];
+        const time = [];
+        let i = 0;
+        while (jsondata[i] != undefined) {
+          time.push(jsondata[i].time);
+          ipv[0].push(jsondata[i].ipvtotal.replace("%",""));
+          ipv[1].push(jsondata[i].ipv4.replace("%",""));
+          ipv[2].push(jsondata[i].ipv6.replace("%",""));
+          i++;
+
+        }
+        chart(ipv, time, "% of IPV support", "Chart5");
+      }
+      async function dnsany() {
+        const jsondata = [];
+        const response = await fetch('https://raw.githubusercontent.com/derekargueta/irm-data/master/results.csv');
+
+        const data = await response.text();
+        const vals = data.split('\n');
+        for (let i = 1; i < vals.length-1; i++) {
+          const row = vals[i].split(',');
+          jsondata.push({
+            time: row[0],
+            dnsany : row[19]
+          });
+        }
+
+        const dnsany = [[],[]];
+        const time = [];
+        let i = 0;
+        while (jsondata[i] != undefined) {
+          time.push(jsondata[i].time);
+          dnsany[0].push(jsondata[i].dnsany.replace("%",""));
+          i++;
+
+        }
+        chart(dnsany, time, "% of DNS ANY support", "Chart6");
+      }
       fetchDataTLS();
       fetchDataHTTP();
+      fetchdataCloudflare();
+      fetchdataFastly();
+      totalipv();
+      dnsany();
     </script>
     <style>
       /* info-container is the general styling for centered divs of text providing information */
@@ -229,6 +428,38 @@
       <div class="chart-container" style="position: relative; height:80vh; width:80vw">
         <canvas id="Chart2"></canvas>
       </div>
+      <div class="info-container">
+        <h3>Supported Cloudflare Versions</h3>
+        <p>Based on our sample set, this is the percent of domains probed that support Cloudflare</p>
+      </div>
+      <div class="chart-container" style="position: relative; height:80vh; width:80vw">
+        <canvas id="Chart3"></canvas>
+      </div>
+      <div class="info-container">
+        <h3>Supported Fastlyprobe Versions</h3>
+        <p>Based on our sample set, this is the percent of domains probed that supports Fastly</p>
+      </div>
+      <div class="chart-container" style="position: relative; height:80vh; width:80vw">
+        <canvas id="Chart4"></canvas>
+      </div>
+      <div class="info-container">
+        <h3>Supported IPV Versions</h3>
+        <p>Based on our sample set, this is the percent of domains probed that support IPV4, IPV6, or both (dualstack)</p>
+      </div>
+      <div class="chart-container" style="position: relative; height:80vh; width:80vw">
+        <canvas id="Chart5"></canvas>
+      </div>
+
+      <div class="info-container">
+        <h3>Supported of DNS ANY </h3>
+        <p>Based on our sample set, this is the percent of domains queried through DNS ANY</p>
+      </div>
+      <div class="chart-container" style="position: relative; height:80vh; width:80vw">
+        <canvas id="Chart6"></canvas>
+      </div>
+      
+      
+
     </div>
     <div class="info-container">
       <h2>Who</h2>
@@ -238,10 +469,11 @@
       </div>
       <div class="profile" style="float: right">
         <h3>Henry Palma - Research Assistant</h3>
-        <p>TODO(tavofn): fill me in</p>
+        <p>Henry is a sophmore at the University of Houston in Houston, Texas studying Computer Science. He has created IOS apps aligned with his interests such as the Arduino Pocket Guide and his own personal beat machine.</p>
       </div>
     </div>
   </body>
 <!-- make chart smaller -->
 <!-- make y axis 0-100 / consistent -->
 </html>
+
