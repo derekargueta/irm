@@ -56,7 +56,18 @@
                 }
               ]
             },
-            options: options
+            options: {
+        scales: {
+            y: {
+                ticks: {
+                    // Include a dollar sign in the ticks
+                    callback: function(value, index, values) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
           });
         } else if (chartID == "Chart2") {
           const myChart = new Chart(ctx, {
@@ -94,7 +105,18 @@
                 }
               ]
             },
-            options: options
+            options: {
+        scales: {
+            y: {
+                ticks: {
+                    // Include a dollar sign in the ticks
+                    callback: function(value, index, values) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
           });
         }else if (chartID == "Chart3") {
           const myChart = new Chart(ctx, {
@@ -126,7 +148,18 @@
                 
               ]
             },
-            options: options
+            options: {
+        scales: {
+            y: {
+                ticks: {
+                    // Include a dollar sign in the ticks
+                    callback: function(value, index, values) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
           });
         }else if (chartID == "Chart4") {
           const myChart = new Chart(ctx, {
@@ -158,7 +191,18 @@
                 
               ]
             },
-            options: options
+            options: {
+        scales: {
+            y: {
+                ticks: {
+                    // Include a dollar sign in the ticks
+                    callback: function(value, index, values) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
           });
         }else if (chartID == "Chart5") {
           const myChart = new Chart(ctx, {
@@ -190,7 +234,18 @@
                 
               ]
             },
-            options: options
+            options: {
+        scales: {
+            y: {
+                ticks: {
+                    // Include a dollar sign in the ticks
+                    callback: function(value, index, values) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
           });
         }else if (chartID == "Chart6") {
           const myChart = new Chart(ctx, {
@@ -207,7 +262,18 @@
                 }, 
               ]
             },
-            options: options
+            options: {
+        scales: {
+            y: {
+                ticks: {
+                    // Include a dollar sign in the ticks
+                    callback: function(value, index, values) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
           });
         }
       }
