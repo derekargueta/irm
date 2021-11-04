@@ -18,9 +18,9 @@ Project layout is based on https://github.com/golang-standards/project-layout
 
 ## IP
 Use DNS answers to check this (A records vs AAAA records), then connect over that IP address to confirm it is valid.
-- [ ] How many HTTP services are served over IPv6?
-- [ ] How many HTTP services are served over IPv4?
-- [ ] How many HTTP services are served over both?
+- [x] How many HTTP services are served over IPv6?
+- [x] How many HTTP services are served over IPv4?
+- [x] How many HTTP services are served over both?
 
 ## TLS
 - [x] How many TLS-enabled HTTP services support TLS 1.0? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
@@ -34,8 +34,9 @@ Use the connecting IP address to approximate where the response is originating f
 In order for this to be accurate, the probes will need to be run from multiple regions to account for multi-CDN architectures.
 Initial version will just be a single region to start with.
 - [ ] What percentage of HTTP services are served over Akamai?
-- [ ] What percentage of HTTP services are served over Cloudflare?
-- [ ] What percentage of HTTP services are served over Fastly?
+- [x] What percentage of HTTP services are served over Cloudflare?
+- [x] What percentage of HTTP services are served over Fastly?
+- [ ] What percentage of HTTP services are served over MaxCDN?
 - [ ] What percentage of HTTP services are served directly from AWS?
 - [ ] What percentage of HTTP services are served directly from Google Cloud?
 - [ ] What percentage of HTTP services are served directly from Azure?
@@ -44,7 +45,7 @@ Initial version will just be a single region to start with.
 - [ ] What percentage of domains use NS1 as an authoritative server?
 - [ ] What percentage of domains use Dyn/Oracle as an authoritative server?
 - [ ] What percentage of domains use Cloudflare as an authoritative server?
-- [ ] What percentage of domains respond to `ANY` queries? (notorious for [DNS amplification attacks](https://www.cloudflare.com/learning/ddos/dns-amplification-ddos-attack/))
+- [x] What percentage of domains respond to `ANY` queries? (notorious for [DNS amplification attacks](https://www.cloudflare.com/learning/ddos/dns-amplification-ddos-attack/))
 - [ ] How long are CNAME chains? (broken into percentiles)
 
 ## Misc.
