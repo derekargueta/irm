@@ -29,6 +29,7 @@ type ProbeResult struct {
 	http10enabled     bool
 	http11enabled     bool
 	http2enabled      bool
+	http3enabled      bool
 	errorhttp1occured bool
 	errorhttp2occured bool
 	tls10enabled      bool
@@ -51,6 +52,7 @@ type TotalTestResult struct {
 	http11enabled     int
 	http2enabled      int
 	http10enabled     int
+	http3enabled      int
 	errorhttp1occured int
 	errorhttp2occured int
 	erroroccured      int
@@ -91,6 +93,9 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 
 	if result.http11enabled {
 		t.http11enabled += 1
+	}
+	if result.http3enabled {
+		t.http3enabled += 1
 	}
 
 	if result.tls10enabled {
@@ -210,6 +215,10 @@ func filepathHTTP(myURL string, cdn_fast *probes.Fastlyprobe, cdn_cloud *probes.
 	http1Result := (&probes.HTTP11Probe{}).Run(myURL)
 	result.errorhttp1occured = http1Result.Err != nil
 	result.http11enabled = http1Result.Supported
+
+	http3Result := (&probes.HTTP3Probe{}).Run(myURL)
+	//result.errorhttp3occured = http2Result.Err != nil
+	result.http3enabled = http3Result.Supported
 
 	TLS10Result := (&probes.TLS{}).Run(myURL, 0)
 	result.tls10enabled = TLS10Result.Err != nil
@@ -350,6 +359,7 @@ func main() {
 						fmt.Sprintf("%d", totalresults.domainsTested),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http3enabled, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
 						fmt.Sprintf("%.2fs", testDuration),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls10enabled, domainsTested)),
@@ -450,6 +460,7 @@ func main() {
 						fmt.Sprintf("%d", totalresults.domainsTested),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http3enabled, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.erroroccured, domainsTested)),
 						fmt.Sprintf("%.2fs", testDuration),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.tls10enabled, domainsTested)),
@@ -493,6 +504,7 @@ func main() {
 				fmt.Printf("Success Rate: %.2f%%\n", util.Percent((domainsTested-totalresults.erroroccured), domainsTested))
 				fmt.Printf("HTTP/1.1 enabled: %.2f%% \n", util.Percent(totalresults.http11enabled, domainsTested))
 				fmt.Printf("HTTP/1.2 enabled: %.2f%%\n", util.Percent(totalresults.http2enabled, domainsTested))
+				fmt.Printf("HTTP/3 enabled: %.2f%%\n", util.Percent(totalresults.http3enabled, domainsTested))
 				fmt.Printf("TLSv1.0 enabled: %.2f%%\n", util.Percent(totalresults.tls10enabled, domainsTested))
 				fmt.Printf("TLSv1.1 enabled: %.2f%%\n", util.Percent(totalresults.tls11enabled, domainsTested))
 				fmt.Printf("TLSv1.2 enabled: %.2f%%\n", util.Percent(totalresults.tls12enabled, domainsTested))
