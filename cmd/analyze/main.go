@@ -332,7 +332,7 @@ func main() {
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
-	flag.IntVar(&timebetrun, "d", 10, "time between runs")
+	flag.IntVar(&timebetrun, "d", 6, "time between runs")
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
 	flag.StringVar(&singleDomain, "domain", "", "test single domain")
 	flag.Parse()
@@ -385,6 +385,7 @@ func main() {
 				}
 				checkFile, err := os.Open(filepathexport)
 				if err != nil {
+					log.Println("cloned right here")
 					_, plainerr := git.PlainClone("/app/tempirmdata", false, &git.CloneOptions{
 						Auth:     publicKeys,
 						URL:      "git@github.com:derekargueta/irm-data.git",
@@ -447,7 +448,7 @@ func main() {
 				})
 				log.Printf("errors that happened: %s", mrr)
 				log.Printf("sleeping for %d seconds\b", timebetrun)
-				time.Sleep(time.Duration(timebetrun) * time.Second)
+				time.Sleep(time.Duration(timebetrun) * time.Hour)
 			}
 		} else {
 			if filepathexport != "" {
@@ -495,6 +496,7 @@ func main() {
 				}
 				file.Close()
 				fmt.Printf("test results written to %s\n", filepathexport)
+
 			} else {
 				timer := time.Now()
 				totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud)
@@ -503,7 +505,7 @@ func main() {
 				fmt.Printf("Test Duration: %.2fs\n", testDuration)
 				fmt.Printf("Success Rate: %.2f%%\n", util.Percent((domainsTested-totalresults.erroroccured), domainsTested))
 				fmt.Printf("HTTP/1.1 enabled: %.2f%% \n", util.Percent(totalresults.http11enabled, domainsTested))
-				fmt.Printf("HTTP/1.2 enabled: %.2f%%\n", util.Percent(totalresults.http2enabled, domainsTested))
+				fmt.Printf("HTTP/2 enabled: %.2f%%\n", util.Percent(totalresults.http2enabled, domainsTested))
 				fmt.Printf("HTTP/3 enabled: %.2f%%\n", util.Percent(totalresults.http3enabled, domainsTested))
 				fmt.Printf("TLSv1.0 enabled: %.2f%%\n", util.Percent(totalresults.tls10enabled, domainsTested))
 				fmt.Printf("TLSv1.1 enabled: %.2f%%\n", util.Percent(totalresults.tls11enabled, domainsTested))
