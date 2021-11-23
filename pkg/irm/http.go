@@ -110,3 +110,12 @@ func Sendfastlyprobe() (*http.Response, error) {
 	request.Close = true
 	return client.Do(request)
 }
+func SendMaxCdnprobe() (*http.Response, error) {
+	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	// TLS is required for public HTTP/2 services, so assume `https`.
+	request, _ := http.NewRequest("GET", "https://support.stackpath.com/hc/en-us/article_attachments/360096407372/ipblocks.txt", nil)
+	request.Close = true
+	return client.Do(request)
+}

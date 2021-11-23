@@ -1,7 +1,6 @@
 package probes
 
 import (
-	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -25,7 +24,7 @@ func (h *Fastlyprobe) Run(domain string) *ProbeResultCDN {
 	if err != nil {
 		log.Println("nope on lookupIP")
 	}
-	fmt.Println(domain)
+
 	enabledtotal := false
 	ipv4 := false
 	ipv6 := false

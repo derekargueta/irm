@@ -46,6 +46,7 @@ type ProbeResult struct {
 	totalipv4         bool
 	dualstack         bool
 	dnsany            bool
+	maxcdn            bool
 }
 type TotalTestResult struct {
 	domainsTested     int
@@ -63,6 +64,7 @@ type TotalTestResult struct {
 	cloudflare        int
 	cloudflareipv4    int
 	cloudflareipv6    int
+	maxCDN            int
 	fastlyprobe       int
 	fastlyprobeipv4   int
 	fastlyprobeipv6   int
@@ -140,6 +142,9 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 	if result.dnsany {
 		t.dnsany += 1
 	}
+	if result.maxcdn {
+		t.maxCDN += 1
+	}
 
 }
 
@@ -153,9 +158,9 @@ const (
 	http10SupportMsgString = "✅ %s supports HTTP/1.0\n"
 )
 
-func worker(input chan string, output chan ProbeResult, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe) {
+func worker(input chan string, output chan ProbeResult, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe, max_cdn probes.MaxCDN) {
 	for x := range input {
-		output <- filepathHTTP(x, &cdn_fast, &cdn_cloud)
+		output <- filepathHTTP(x, cdn_fast, cdn_cloud, max_cdn)
 
 	}
 }
@@ -164,7 +169,7 @@ func worker(input chan string, output chan ProbeResult, cdn_fast probes.Fastlypr
 create listener to prevent tcp error
 instantiate before starting workers
 */
-func fileEntry(filepath string, workers int, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe) TotalTestResult {
+func fileEntry(filepath string, workers int, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe, cdn_max probes.MaxCDN) TotalTestResult {
 	domains, err := os.Open(filepath)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -179,7 +184,7 @@ func fileEntry(filepath string, workers int, cdn_fast probes.Fastlyprobe, cdn_cl
 
 	for x := 0; x < workers; x++ {
 		go func() {
-			worker(jobs, results, cdn_fast, cdn_cloud)
+			worker(jobs, results, cdn_fast, cdn_cloud, cdn_max)
 		}()
 	}
 
@@ -205,7 +210,7 @@ func fileEntry(filepath string, workers int, cdn_fast probes.Fastlyprobe, cdn_cl
 	return totalresults
 }
 
-func filepathHTTP(myURL string, cdn_fast *probes.Fastlyprobe, cdn_cloud *probes.Cloudflareprobe) ProbeResult {
+func filepathHTTP(myURL string, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe, mymaxcdn probes.MaxCDN) ProbeResult {
 	result := ProbeResult{}
 
 	http2Result := (&probes.HTTP2Probe{}).Run(myURL)
@@ -250,6 +255,9 @@ func filepathHTTP(myURL string, cdn_fast *probes.Fastlyprobe, cdn_cloud *probes.
 	result.dualstack = ipvtotal.Dualstack
 	result.totalipv4 = ipvtotal.Supportedipv4
 	result.totalipv6 = ipvtotal.Supportedipv6
+
+	maxcdn := (mymaxcdn).Run(myURL)
+	result.maxcdn = maxcdn.Supported
 
 	anydns := (&probes.Dns_any{}).Run(myURL)
 	result.dnsany = anydns.Supported
@@ -312,12 +320,32 @@ func mycloud() *probes.Cloudflareprobe {
 	}
 	for cidrsipv6.Scan() {
 		//log.Println("scanning for ipv4")
+
 		_, cidrsparse, _ := net.ParseCIDR(cidrsipv6.Text())
 		cloud.Ipv6_cidr = append(cloud.Ipv6_cidr, cidrsparse)
 
 	}
 	fmt.Println("cloud run")
 	return &cloud
+}
+
+func myMaxcdn() *probes.MaxCDN {
+	cidrsurlipv4, err := irm.SendMaxCdnprobe()
+	if err != nil {
+		log.Println("nope on maxcdn")
+	}
+
+	cidrsipv4 := bufio.NewScanner(cidrsurlipv4.Body)
+
+	max := probes.MaxCDN{}
+
+	for cidrsipv4.Scan() {
+		//log.Println("scanning for ipv4")
+		_, cidrsparse, _ := net.ParseCIDR(cidrsipv4.Text())
+		max.Ipv4_cidr = append(max.Ipv4_cidr, cidrsparse)
+	}
+	fmt.Println("run maxcdn")
+	return &max
 }
 func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
@@ -334,14 +362,38 @@ func main() {
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
 	flag.IntVar(&timebetrun, "d", 6, "time between runs")
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
-	flag.StringVar(&singleDomain, "domain", "", "test single domain")
+	flag.StringVar(&singleDomain, "url", "", "test single domain")
 	flag.Parse()
 
 	cdn_fast := myfast()
 	cdn_cloud := mycloud()
+	cdn_max := myMaxcdn()
 	if singleDomain != "" {
-		test := filepathHTTP(singleDomain, cdn_fast, cdn_cloud)
-		fmt.Printf("HTTP/1.1: %t \nHTTP/1.2: %t \nTLSv1.0: %t \nTLSv1.1: %t \nTLSv1.2: %t \nTLSv1.3: %t\n", test.http11enabled, test.http11enabled, test.tls10enabled, test.tls11enabled, test.tls12enabled, test.tls13enabled)
+		timer := time.Now()
+		totalresults := filepathHTTP(singleDomain, *cdn_fast, *cdn_cloud, *cdn_max)
+		testDuration := time.Since(timer).Seconds()
+
+		fmt.Printf("Test Duration: %.2fs\n", testDuration)
+		//fmt.Printf("Success Rate: %.2d%%\n", util.Percent((totalresults.erroroccured), domainsTested))
+		fmt.Printf("HTTP/1.1 enabled: %t \n", totalresults.http11enabled)
+		fmt.Printf("HTTP/2 enabled: %t\n", totalresults.http2enabled)
+		fmt.Printf("HTTP/3 enabled: %t\n", totalresults.http3enabled)
+		fmt.Printf("TLSv1.0 enabled: %t\n", totalresults.tls10enabled)
+		fmt.Printf("TLSv1.1 enabled: %t\n", totalresults.tls11enabled)
+		fmt.Printf("TLSv1.2 enabled: %t\n", totalresults.tls12enabled)
+		fmt.Printf("TLSv1.3 enabled: %t\n", totalresults.tls13enabled)
+		fmt.Printf("cloudflares enabled: %t\n", totalresults.cloudflare)
+		fmt.Printf("cloudflares ipv4 enabled:  %t\n", totalresults.cloudflareipv4)
+		fmt.Printf("cloudflares ipv6 enabled: %t\n", totalresults.cloudflareipv6)
+		fmt.Printf("fastlyprobe enabled: %t\n", totalresults.fastlyprobe)
+		fmt.Printf("fastlyprobe ipv4 enabled: %t\n", totalresults.fastlyprobeipv4)
+		fmt.Printf("fastlyprobe ipv6 enabled: %t\n", totalresults.fastlyprobeipv6)
+		fmt.Printf("MaxCDN enabled: %t\n", totalresults.maxcdn)
+		fmt.Printf("Dualstack enabled: %t\n", totalresults.dualstack)
+		fmt.Printf("Total Ipv4 enabled:  %t\n", totalresults.totalipv4)
+		fmt.Printf("Total Ipv6 enabled: %t\n", totalresults.totalipv6)
+		fmt.Printf("DNS ANY query responses: %t\n", totalresults.dnsany)
+
 		os.Exit(0)
 	}
 
@@ -351,7 +403,7 @@ func main() {
 		if enableGit == 1 {
 			for {
 				timer := time.Now()
-				totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud)
+				totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud, *cdn_max)
 				testDuration := time.Since(timer).Seconds()
 				domainsTested := totalresults.domainsTested
 				data := [][]string{
@@ -372,6 +424,7 @@ func main() {
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobe, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.maxCDN, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.dualstack, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv4, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv6, domainsTested)),
@@ -453,7 +506,7 @@ func main() {
 		} else {
 			if filepathexport != "" {
 				timer := time.Now()
-				totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud)
+				totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud, *cdn_max)
 				testDuration := time.Since(timer).Seconds()
 				domainsTested := totalresults.domainsTested
 				data := [][]string{
@@ -474,6 +527,7 @@ func main() {
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobe, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobeipv4, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.fastlyprobeipv6, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.maxCDN, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.dualstack, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv4, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv6, domainsTested)),
@@ -499,7 +553,7 @@ func main() {
 
 			} else {
 				timer := time.Now()
-				totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud)
+				totalresults := fileEntry(filepath, numWorkers, *cdn_fast, *cdn_cloud, *cdn_max)
 				testDuration := time.Since(timer).Seconds()
 				domainsTested := totalresults.domainsTested
 				fmt.Printf("Test Duration: %.2fs\n", testDuration)
@@ -517,10 +571,12 @@ func main() {
 				fmt.Printf("fastlyprobe enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobe, domainsTested))
 				fmt.Printf("fastlyprobe ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.fastlyprobeipv4, domainsTested))
 				fmt.Printf("fastlyprobe ipv6 enabled: %.2f%%\n", util.Percent(totalresults.fastlyprobeipv6, domainsTested))
+				fmt.Printf("MaxCDN enabled: %.2f%%\n", util.Percent(totalresults.maxCDN, domainsTested))
 				fmt.Printf("Dualstack enabled: %.2f%%\n", util.Percent(totalresults.dualstack, domainsTested))
 				fmt.Printf("Total Ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested))
 				fmt.Printf("Total Ipv6 enabled: %.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested))
 				fmt.Printf("DNS ANY query responses: %.2f%%\n", util.Percent(totalresults.dnsany, domainsTested))
+				fmt.Printf("maxcdn count %.2d\n", totalresults.maxCDN)
 
 			}
 			os.Exit(0)

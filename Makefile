@@ -7,7 +7,7 @@ run-docker:
 	docker run -it irm
 
 cron-docker:
-	docker run -it -v /Users/Tavo/.ssh:/home/.ssh/ irm
+	docker run -it -v /root/.ssh:/home/.ssh/ irm
 # -v localDIR:dockerDIR
 # -v 
  

@@ -8,10 +8,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-/**
- * Checks if the domain supports cloudflare.
- */
-
 type Dns_any struct {
 	Ipv4_cidr []*net.IPNet
 	Ipv6_cidr []*net.IPNet
@@ -28,15 +24,15 @@ func (h *Dns_any) Run(domain string) *ProbeResult {
 	for _, x := range nameserver {
 		m := new(dns.Msg)
 		m.SetQuestion(dns.Fqdn(domain), dns.TypeANY)
-		in, time, err := client.Exchange(m, x.Host+":53")
-		fmt.Println(x.Host)
+		in, _, err := client.Exchange(m, x.Host+":53")
+		//fmt.Println(x.Host)
 		if err != nil {
 			fmt.Println("on exchange", err)
 		} else {
 			yes := in.String()
 			if strings.Contains(yes, "RFC8482") {
 				ah = true
-				fmt.Println(time)
+
 			}
 			/*
 				if true, means dns query is blocked
@@ -48,7 +44,7 @@ func (h *Dns_any) Run(domain string) *ProbeResult {
 		}
 	}
 
-	fmt.Println(ah)
+	//fmt.Println(ah)
 
 	return &ProbeResult{
 		Supported: !ah, //if false, means dns didnt respond to query
