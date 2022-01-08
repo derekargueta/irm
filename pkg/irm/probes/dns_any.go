@@ -37,7 +37,7 @@ func (h *Dns_any) Run(domain string) *ProbeResult {
 			/*
 				if true, means dns query is blocked
 			*/
-			if ah == true {
+			if ah {
 				break
 			}
 

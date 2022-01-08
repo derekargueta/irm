@@ -19,6 +19,13 @@ type TotalIpvProbe struct {
 	Err           error
 	Name          string
 }
+type TotalTlsCertify struct {
+	Digicert bool
+	Comodo   bool
+	Encrypt  bool
+	Amazon   bool
+	Err      error
+}
 
 type Probe interface {
 	Run(string) *ProbeResult

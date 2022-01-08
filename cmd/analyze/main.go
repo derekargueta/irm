@@ -26,7 +26,7 @@ import (
 )
 
 type ProbeResult struct {
-	http10enabled     bool
+	// http10enabled     bool
 	http11enabled     bool
 	http2enabled      bool
 	http3enabled      bool
@@ -47,12 +47,16 @@ type ProbeResult struct {
 	dualstack         bool
 	dnsany            bool
 	maxcdn            bool
+
+	digicert bool
+	comodo   bool
+	encrypt  bool
 }
 type TotalTestResult struct {
-	domainsTested     int
-	http11enabled     int
-	http2enabled      int
-	http10enabled     int
+	domainsTested int
+	http11enabled int
+	http2enabled  int
+	// http10enabled     int
 	http3enabled      int
 	errorhttp1occured int
 	errorhttp2occured int
@@ -72,6 +76,10 @@ type TotalTestResult struct {
 	totalipv4         int
 	dualstack         int
 	dnsany            int
+
+	digicert int
+	comodo   int
+	encrypt  int
 }
 
 func (t *TotalTestResult) AddResult(result ProbeResult) {
@@ -145,18 +153,17 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 	if result.maxcdn {
 		t.maxCDN += 1
 	}
+	if result.digicert {
+		t.digicert += 1
+	}
+	if result.comodo {
+		t.comodo += 1
+	}
+	if result.encrypt {
+		t.encrypt += 1
+	}
 
 }
-
-const (
-	errNumArgsMsgString = "Incorrect number of arguments, expecting 1 but received %d. Usage: ./analyze <domain>\n"
-
-	http2NoSupportMsgString = "🚫 %s does not support HTTP/2\n"
-	http2SupportMsgString   = "✅ %s supports HTTP/2\n"
-
-	http1xSupportMsgString = "✅ %s supports HTTP/1.1\n"
-	http10SupportMsgString = "✅ %s supports HTTP/1.0\n"
-)
 
 func worker(input chan string, output chan ProbeResult, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cloudflareprobe, max_cdn probes.MaxCDN) {
 	for x := range input {
@@ -261,6 +268,12 @@ func filepathHTTP(myURL string, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cl
 
 	anydns := (&probes.Dns_any{}).Run(myURL)
 	result.dnsany = anydns.Supported
+
+	tlscertify := (&probes.Tlscertify{}).Run(myURL)
+	result.digicert = tlscertify.Digicert
+	result.comodo = tlscertify.Comodo
+	result.encrypt = tlscertify.Encrypt
+
 	return result
 }
 
@@ -393,7 +406,9 @@ func main() {
 		fmt.Printf("Total Ipv4 enabled:  %t\n", totalresults.totalipv4)
 		fmt.Printf("Total Ipv6 enabled: %t\n", totalresults.totalipv6)
 		fmt.Printf("DNS ANY query responses: %t\n", totalresults.dnsany)
-
+		fmt.Printf("Digicert Certificate Usage: %t\n", totalresults.digicert)
+		fmt.Printf("Comodo Certificate Usage: %t\n", totalresults.comodo)
+		fmt.Printf("Let's Encrypt Usage: %t\n", totalresults.encrypt)
 		os.Exit(0)
 	}
 
@@ -576,7 +591,10 @@ func main() {
 				fmt.Printf("Total Ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested))
 				fmt.Printf("Total Ipv6 enabled: %.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested))
 				fmt.Printf("DNS ANY query responses: %.2f%%\n", util.Percent(totalresults.dnsany, domainsTested))
-				fmt.Printf("maxcdn count %.2d\n", totalresults.maxCDN)
+				fmt.Printf("maxcdn count: %.2d\n", totalresults.maxCDN)
+				fmt.Printf("Digicert Certificate Usage: %.2f%%\n", util.Percent(totalresults.digicert, domainsTested))
+				fmt.Printf("Comodo Certificate Usage: %.2f%%\n", util.Percent(totalresults.comodo, domainsTested))
+				fmt.Printf("Let's Encrypt Usage: %.2f%%\n", util.Percent(totalresults.encrypt, domainsTested))
 
 			}
 			os.Exit(0)

@@ -5,7 +5,7 @@ qq.com
 baidu.com
 sohu.com
 facebook.com
-taobao.com
+world.taobao.com
 360.cn
 jd.com
 yahoo.com
@@ -63,7 +63,7 @@ google.co.in
 okta.com
 wordpress.com
 chase.com
-amazonaws.com
+aws.amazon.com
 babytree.com
 tribunnews.com
 ok.ru
