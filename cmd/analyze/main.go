@@ -345,7 +345,7 @@ func mycloud() *probes.Cloudflareprobe {
 func myMaxcdn() *probes.MaxCDN {
 	cidrsurlipv4, err := irm.SendMaxCdnprobe()
 	if err != nil {
-		log.Println("nope on maxcdn")
+		log.Println("Couldn't retrieve maxcdn addresses")
 	}
 
 	cidrsipv4 := bufio.NewScanner(cidrsurlipv4.Body)
@@ -591,7 +591,6 @@ func main() {
 				fmt.Printf("Total Ipv4 enabled:  %.2f%%\n", util.Percent(totalresults.totalipv4, domainsTested))
 				fmt.Printf("Total Ipv6 enabled: %.2f%%\n", util.Percent(totalresults.totalipv6, domainsTested))
 				fmt.Printf("DNS ANY query responses: %.2f%%\n", util.Percent(totalresults.dnsany, domainsTested))
-				fmt.Printf("maxcdn count: %.2d\n", totalresults.maxCDN)
 				fmt.Printf("Digicert Certificate Usage: %.2f%%\n", util.Percent(totalresults.digicert, domainsTested))
 				fmt.Printf("Comodo Certificate Usage: %.2f%%\n", util.Percent(totalresults.comodo, domainsTested))
 				fmt.Printf("Let's Encrypt Usage: %.2f%%\n", util.Percent(totalresults.encrypt, domainsTested))

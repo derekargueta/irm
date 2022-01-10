@@ -18,7 +18,6 @@ func (h *Total_ipv) Run(domain string) *TotalIpvProbe {
 	ipv6 := false
 	request, err := net.LookupIP(domain)
 
-	
 	_, httperr := http.NewRequest("GET", domain, nil)
 	if httperr != nil {
 		return &TotalIpvProbe{
@@ -41,7 +40,7 @@ func (h *Total_ipv) Run(domain string) *TotalIpvProbe {
 		enabled = true
 	}
 	if err != nil {
-		log.Println("cant get dns")
+		log.Println("cant get dns on ipv4/ipv6 probe")
 	}
 
 	return &TotalIpvProbe{

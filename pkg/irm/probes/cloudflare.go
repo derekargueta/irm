@@ -19,7 +19,7 @@ type Cloudflareprobe struct {
 func (h *Cloudflareprobe) Run(domain string) *ProbeResultCDN {
 	ips, err := net.LookupIP(domain)
 	if err != nil {
-		log.Println("nope on lookupIP")
+		log.Println("nope on lookupIP in cloudflare probe")
 	}
 	enabledtotal := false
 	ipv4 := false

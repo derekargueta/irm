@@ -3,7 +3,9 @@ package probes
 import (
 	"crypto/tls"
 	"log"
+	"net"
 	"strings"
+	"time"
 )
 
 type Tlscertify struct {
@@ -21,7 +23,8 @@ func (h *Tlscertify) Run(domain string) *TotalTlsCertify {
 	Encrypt := false
 	Amazon := false
 
-	conn, err := tls.Dial("tcp", domain+":443", nil)
+	conn, err := tls.DialWithDialer(&net.Dialer{Timeout: time.Second * 15}, "tcp", domain+":443", nil)
+
 	if err != nil {
 		log.Print("No SSL certificate: "+domain, err)
 	} else {

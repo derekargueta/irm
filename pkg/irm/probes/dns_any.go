@@ -49,6 +49,6 @@ func (h *Dns_any) Run(domain string) *ProbeResult {
 	return &ProbeResult{
 		Supported: !ah, //if false, means dns didnt respond to query
 		Err:       err,
-		Name:      "cloudflare not supported",
+		Name:      "DNS any found",
 	}
 }
