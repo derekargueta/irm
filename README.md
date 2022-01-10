@@ -44,7 +44,7 @@ Initial version will just be a single region to start with.
 ## DNS
 - [ ] What percentage of domains use NS1 as an authoritative server?
 - [ ] What percentage of domains use Dyn/Oracle as an authoritative server?
-- [ ] What percentage of domains use Cloudflare as an authoritative server?
+- [x] What percentage of domains use Cloudflare as an authoritative server?
 - [x] What percentage of domains respond to `ANY` queries? (notorious for [DNS amplification attacks](https://www.cloudflare.com/learning/ddos/dns-amplification-ddos-attack/))
 - [ ] How long are CNAME chains? (broken into percentiles)
 
