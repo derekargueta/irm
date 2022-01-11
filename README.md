@@ -12,7 +12,7 @@ Project layout is based on https://github.com/golang-standards/project-layout
 - [ ] How many HTTP services have HTTP/1.0 enabled?
 - [x] How many HTTP services have HTTP/1.1 enabled?
 - [x] How many HTTP services have HTTP/2 enabled?
-- [ ] How many HTTP services support HTTP/3?
+- [x] How many HTTP services support HTTP/3?
 - [ ] How many HTTP services support UDP on :443? (prerequisite to QUIC/HTTP3)
 - [ ] How many HTTP services support plaintext HTTP on port 80?
 
