@@ -444,10 +444,16 @@ func main() {
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv4, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv6, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.dnsany, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.dualstack, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv4, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv6, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.digicert, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.comodo, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.encrypt, domainsTested)),
 					}}
 
 				os.Setenv("SSH_KNOWN_HOSTS", "/home/.ssh/known_hosts")
-				publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_ed25519", "") //
+				publicKeys, err := ssh.NewPublicKeysFromFile("git", "/home/.ssh/id_rsa", "") //
 				if err != nil {
 					log.Printf("generate publickeys failed: %s\n", err.Error())
 				}
@@ -547,6 +553,9 @@ func main() {
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv4, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.totalipv6, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.dnsany, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.digicert, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.comodo, domainsTested)),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.encrypt, domainsTested)),
 					}}
 				file, err := os.OpenFile(filepathexport, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) //       path 3
 				if err != nil {
