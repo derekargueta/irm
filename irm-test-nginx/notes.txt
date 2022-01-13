@@ -1,0 +1,14 @@
+Making certificate
+ 
+    openssl req -x509 -sha256 -nodes -newkey rsa:2048 -days 365 -keyout localhost.key -out localhost.crt -addext "subjectAltName = DNS: localhost"
+
+
+//Derek: 
+Adding root certificate to keychain:
+
+    sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /path/to/file/localhost.crt
+
+docker compose commands
+
+sudo docker compose build
+sudo docker compose up 
