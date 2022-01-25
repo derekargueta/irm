@@ -65,6 +65,12 @@
               ]
             },
             options: {
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
         scales: {
             y: {
                 ticks: {
@@ -113,6 +119,12 @@
               ]
             },
             options: {
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
         scales: {
             y: {
                 ticks: {
@@ -155,6 +167,12 @@
               ]
             },
             options: {
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
         scales: {
             y: {
                 ticks: {
@@ -197,6 +215,12 @@
               ]
             },
             options: {
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
         scales: {
             y: {
                 ticks: {
@@ -239,6 +263,12 @@
               ]
             },
             options: {
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
         scales: {
             y: {
                 ticks: {
@@ -266,6 +296,12 @@
               ]
             },
             options: {
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
         scales: {
             y: {
                 ticks: {
@@ -293,6 +329,12 @@
               ]
             },
             options: {
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
         scales: {
             y: {
                 ticks: {
@@ -335,19 +377,26 @@
               ]
             },
             options: {
-        scales: {
-            y: {
-                ticks: {
-                    callback: function(value, index, values) {
-                        return value + '%';
+              plugins: {
+                tooltip: {
+                  mode: 'index',
+                  intersect: false
+                }
+              },
+              
+            scales: {
+                y: {
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return value + '%';
+                        }
                     }
                 }
-            }
-        }
-    }
-          });
-        }
+            }, 
+          }
+        });
       }
+    }
 
       async function fetchDataHTTP() {
         const jsondata = [];
@@ -604,68 +653,74 @@
       .profile {
         width: 300px;
       }
+
+      .text-format {
+        text-align: center; 
+        font-family:'Helvetica'; 
+        font-weight: lighter;
+      }
     </style>
   </head>
   <body>
     <div class="info-container">
-      <h1 style="text-align: center">The Internet Measurement Research Project</h1>
-      <p>This is a project that aims to monitor the deployment of various protocols and web technologies to gauge the general status of the internet. We scan a list of domains and run probes against each domain. A probe is simply a TCP connection that records what versions of a protocol worked. This provides a rough estimation of the Internet. In the future, we will develop techniques for discovering new domains, and pruning domains that are no longer valid to keep the data set as accurate as possible. All of our source code is at <a href="https://github.com/derekargueta/irm" target="_blank">github.com/derekargueta/irm</a>. Inspiration for this project was drawn from HTTP Archive's <a href="https://httparchive.org/reports/state-of-the-web" target="_blank">State of the Web</a>, <a href="https://observatory.mozilla.org/" target="_blank">Mozilla Observatory</a>, and BYU's <a href="https://imaal.byu.edu/" target="_blank">Internet Measurement and Anti-Abuse Lab</a>.</p>
+      <h1 class="text-format">The Internet Measurement Research Project</h1>
+      <p class="text-format">This is a project that aims to monitor the deployment of various protocols and web technologies to gauge the general status of the internet. We scan a list of domains and run probes against each domain. A probe is simply a TCP connection that records what versions of a protocol worked. This provides a rough estimation of the Internet. In the future, we will develop techniques for discovering new domains, and pruning domains that are no longer valid to keep the data set as accurate as possible. All of our source code is at <a href="https://github.com/derekargueta/irm" target="_blank">github.com/derekargueta/irm</a>. Inspiration for this project was drawn from HTTP Archive's <a href="https://httparchive.org/reports/state-of-the-web" target="_blank">State of the Web</a>, <a href="https://observatory.mozilla.org/" target="_blank">Mozilla Observatory</a>, and BYU's <a href="https://imaal.byu.edu/" target="_blank">Internet Measurement and Anti-Abuse Lab</a>.</p>
     </div>
     <!-- <div style="width: 100%;overflow: auto"> -->
-      <h2 style="text-align: center">Data</h2>
+      <h2 class="text-format">Data</h2>
       <div class="">
-        <h3 style="text-align: center">Supported HTTP Versions</h3>
-        <p style="text-align: center">Based on our sample set, this is the percent of domains probed that support HTTP/1.1 vs HTTP/2 vs HTTP/3</p>
+        <h3 class="text-format">Supported HTTP Versions</h3>
+        <p class="text-format">Based on our sample set, this is the percent of domains probed that support HTTP/1.1 vs HTTP/2 vs HTTP/3</p>
       </div>
       <div class="chart-container" style="position: relative;">
         <canvas id="Chart1"></canvas>
       </div>
       <div class="">
-        <h3 style="text-align: center">Supported TLS Versions</h3>
-        <p style="text-align: center"> Based on our sample set, this is the percent of domains probed that support the various versions of TLS.</p>
+        <h3 class="text-format">Supported TLS Versions</h3>
+        <p class="text-format"> Based on our sample set, this is the percent of domains probed that support the various versions of TLS.</p>
       </div>
       <div class="chart-container" style="position: relative; ">
         <canvas id="Chart2"></canvas>
       </div>
       <div class="">
-        <h3 style="text-align: center">Supported Cloudflare Versions</h3>
-        <p style="text-align: center">Based on our sample set, this is the percent of domains probed that support Cloudflare</p>
+        <h3 class="text-format">Supported Cloudflare Versions</h3>
+        <p class="text-format">Based on our sample set, this is the percent of domains probed that support Cloudflare</p>
       </div>
       <div class="chart-container" style="position: relative; ">
         <canvas id="Chart3"></canvas>
       </div>
       <div class="">
-        <h3 style="text-align: center">Supported Fastlyprobe Versions</h3>
-        <p style="text-align: center">Based on our sample set, this is the percent of domains probed that supports Fastly</p>
+        <h3 class="text-format">Supported Fastlyprobe Versions</h3>
+        <p class="text-format">Based on our sample set, this is the percent of domains probed that supports Fastly</p>
       </div>
       <div class="chart-container" style="position: relative; ">
         <canvas id="Chart4"></canvas>
       </div>
       <div class="">
-        <h3 style="text-align: center">Supported IPV Versions</h3>
-        <p style="text-align: center">Based on our sample set, this is the percent of domains probed that support IPV4, IPV6, or both (dualstack)</p>
+        <h3 class="text-format">Supported IPV Versions</h3>
+        <p class="text-format">Based on our sample set, this is the percent of domains probed that support IPV4, IPV6, or both (dualstack)</p>
       </div>
       <div class="chart-container" style="position: relative; ">
         <canvas id="Chart5"></canvas>
       </div>
 
       <div class="">
-        <h3 style="text-align: center">Supported of DNS ANY </h3>
-        <p style="text-align: center">Based on our sample set, this is the percent of domains queried through DNS ANY</p>
+        <h3 class="text-format">Supported of DNS ANY </h3>
+        <p class="text-format">Based on our sample set, this is the percent of domains queried through DNS ANY</p>
       </div>
       <div class="chart-container" style="position: relative; ">
         <canvas id="Chart6"></canvas>
       </div>
       <div class="">
-        <h3 style="text-align: center">Supported of Stackpath</h3>
-        <p style="text-align: center">Based on our sample set, this is the percent of Stackpath enabled websites</p>
+        <h3 class="text-format">Supported of Stackpath</h3>
+        <p class="text-format">Based on our sample set, this is the percent of Stackpath enabled websites</p>
       </div>
       <div class="chart-container" style="position: relative; ">
         <canvas id="Chart7"></canvas>
       </div>
       <div class="">
-        <h3 style="text-align: center">Supported of SSL Certificates</h3>
-        <p style="text-align: center">Based on our sample set, this is the percent of Certificate usage</p>
+        <h3 class="text-format">Supported of SSL Certificates</h3>
+        <p class="text-format">Based on our sample set, this is the percent of Certificate usage</p>
       </div>
       <div class="chart-container" style="position: relative; ">
         <canvas id="Chart8"></canvas>
