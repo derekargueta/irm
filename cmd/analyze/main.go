@@ -27,6 +27,7 @@ import (
 
 type ProbeResult struct {
 	// http10enabled     bool
+	http10enabled     bool
 	http11enabled     bool
 	http2enabled      bool
 	http3enabled      bool
@@ -54,6 +55,7 @@ type ProbeResult struct {
 }
 type TotalTestResult struct {
 	domainsTested int
+	http10enabled int
 	http11enabled int
 	http2enabled  int
 	// http10enabled     int
@@ -161,6 +163,9 @@ func (t *TotalTestResult) AddResult(result ProbeResult) {
 	}
 	if result.encrypt {
 		t.encrypt += 1
+	}
+	if result.http10enabled {
+		t.http10enabled += 1
 	}
 
 }
@@ -274,6 +279,9 @@ func filepathHTTP(myURL string, cdn_fast probes.Fastlyprobe, cdn_cloud probes.Cl
 	result.comodo = tlscertify.Comodo
 	result.encrypt = tlscertify.Encrypt
 
+	http10 := (&probes.Http10probe{}).Run(myURL)
+	result.http10enabled = http10.Err != nil
+	result.http10enabled = http10.Supported
 	return result
 }
 
@@ -388,6 +396,7 @@ func main() {
 
 		fmt.Printf("Test Duration: %.2fs\n", testDuration)
 		//fmt.Printf("Success Rate: %.2d%%\n", util.Percent((totalresults.erroroccured), domainsTested))
+		fmt.Printf("HTTP/1.0 enabled: %t \n", totalresults.http10enabled)
 		fmt.Printf("HTTP/1.1 enabled: %t \n", totalresults.http11enabled)
 		fmt.Printf("HTTP/2 enabled: %t\n", totalresults.http2enabled)
 		fmt.Printf("HTTP/3 enabled: %t\n", totalresults.http3enabled)
@@ -424,6 +433,7 @@ func main() {
 				data := [][]string{
 					{time.Now().Format("2006-01-02 15:04:05"),
 						fmt.Sprintf("%d", totalresults.domainsTested),
+						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http10enabled, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http2enabled, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http11enabled, domainsTested)),
 						fmt.Sprintf("%.2f%%", util.Percent(totalresults.http3enabled, domainsTested)),
@@ -579,6 +589,7 @@ func main() {
 				domainsTested := totalresults.domainsTested
 				fmt.Printf("Test Duration: %.2fs\n", testDuration)
 				fmt.Printf("Success Rate: %.2f%%\n", util.Percent((domainsTested-totalresults.erroroccured), domainsTested))
+				fmt.Printf("HTTP/1.0 enabled: %.2f%% \n", util.Percent(totalresults.http10enabled, domainsTested))
 				fmt.Printf("HTTP/1.1 enabled: %.2f%% \n", util.Percent(totalresults.http11enabled, domainsTested))
 				fmt.Printf("HTTP/2 enabled: %.2f%%\n", util.Percent(totalresults.http2enabled, domainsTested))
 				fmt.Printf("HTTP/3 enabled: %.2f%%\n", util.Percent(totalresults.http3enabled, domainsTested))
