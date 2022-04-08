@@ -53,5 +53,5 @@ func main() {
 	http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(args.webDir))))
 	// Bind the TCP listener.
 	listenAddr := fmt.Sprintf(":%d", args.port)
-	log.Fatal(http.ListenAndServe(listenAddr, nil))
+	log.Fatal(http.ListenAndServe("127.0.0.1"+listenAddr, nil))
 }
