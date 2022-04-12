@@ -55,10 +55,9 @@ type ProbeResult struct {
 }
 type TotalTestResult struct {
 	domainsTested int
-	http10enabled int
 	http11enabled int
 	http2enabled  int
-	// http10enabled     int
+	http10enabled     int
 	http3enabled      int
 	errorhttp1occured int
 	errorhttp2occured int

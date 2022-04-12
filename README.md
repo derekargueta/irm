@@ -12,7 +12,7 @@ Project layout is based on https://github.com/golang-standards/project-layout
 - [ ] How many HTTP services have HTTP/1.0 enabled?
 - [x] How many HTTP services have HTTP/1.1 enabled?
 - [x] How many HTTP services have HTTP/2 enabled?
-- [ ] How many HTTP services support HTTP/3?
+- [x] How many HTTP services support HTTP/3?
 - [ ] How many HTTP services support UDP on :443? (prerequisite to QUIC/HTTP3)
 - [ ] How many HTTP services support plaintext HTTP on port 80?
 
@@ -27,7 +27,7 @@ Use DNS answers to check this (A records vs AAAA records), then connect over tha
 - [x] How many TLS-enabled HTTP services support TLS 1.1? (officially deprecated via [RFC 8996](https://datatracker.ietf.org/doc/rfc8996/))
 - [x] How many TLS-enabled HTTP services support TLS 1.2?
 - [x] How many TLS-enabled HTTP services support TLS 1.3?
-- [ ] What is the distribution of root CA providers? (Digicert, Verisign, Komodo, etc.)
+- [x] What is the distribution of root CA providers? (Digicert, Verisign, Komodo, etc.)
 
 ## CDNs/Datacenters
 Use the connecting IP address to approximate where the response is originating from, for example checking against [Cloudflare's public IP range](https://www.cloudflare.com/ips/).
@@ -36,7 +36,7 @@ Initial version will just be a single region to start with.
 - [ ] What percentage of HTTP services are served over Akamai?
 - [x] What percentage of HTTP services are served over Cloudflare?
 - [x] What percentage of HTTP services are served over Fastly?
-- [ ] What percentage of HTTP services are served over MaxCDN?
+- [x] What percentage of HTTP services are served over MaxCDN?
 - [ ] What percentage of HTTP services are served directly from AWS?
 - [ ] What percentage of HTTP services are served directly from Google Cloud?
 - [ ] What percentage of HTTP services are served directly from Azure?
@@ -44,7 +44,7 @@ Initial version will just be a single region to start with.
 ## DNS
 - [ ] What percentage of domains use NS1 as an authoritative server?
 - [ ] What percentage of domains use Dyn/Oracle as an authoritative server?
-- [ ] What percentage of domains use Cloudflare as an authoritative server?
+- [x] What percentage of domains use Cloudflare as an authoritative server?
 - [x] What percentage of domains respond to `ANY` queries? (notorious for [DNS amplification attacks](https://www.cloudflare.com/learning/ddos/dns-amplification-ddos-attack/))
 - [ ] How long are CNAME chains? (broken into percentiles)
 
