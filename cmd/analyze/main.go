@@ -54,9 +54,9 @@ type ProbeResult struct {
 	encrypt  bool
 }
 type TotalTestResult struct {
-	domainsTested int
-	http11enabled int
-	http2enabled  int
+	domainsTested     int
+	http11enabled     int
+	http2enabled      int
 	http10enabled     int
 	http3enabled      int
 	errorhttp1occured int
