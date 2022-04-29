@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="./css/home.css">
 
 </head>
 
@@ -17,10 +17,27 @@
       
 		<span class="line"></span>
 	</nav>
-    <div class = "title">
+    <div class = "title">	
         <h1 style = "font-size:50px;" >The Internet Measurement Research Project</h1>
 
     </div>
+	<div class="links">
+		<!-- <input name="url"
+		   placeholder="https://example.com"
+		   pattern="https://.*" size="30"
+		   required> -->
+		   <form action="/singledomain" method="post">
+            website:<input type="text" name="website">
+            <input type="submit" value="Enter">
+        </form>
+		   
+	</div>
+	<h1>http1.0: {{.Http10}}</h1>
+	<h1>http1.1:{{.Http11}}</h1>
+	<h1>http1.2:{{.Http12}}</h1>
+	<h1>http1.3:{{.Http13}}</h1>
 </header>
 
 </html>
+
+
