@@ -15,7 +15,7 @@ import (
 
 func SendHTTP1Request(domain string, http_str string) (*http.Response, error) {
 	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS10}
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
 	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TODO(derekargueta): if TLS fails, try HTTP/1 without TLS.
 
@@ -26,7 +26,7 @@ func SendHTTP1Request(domain string, http_str string) (*http.Response, error) {
 
 func SendHTTP2Request(domain string) (*http.Response, error) {
 	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS10}
-	client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: &http2.Transport{}, Timeout: 5 * time.Second}
 	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
@@ -36,7 +36,7 @@ func SendHTTP2Request(domain string) (*http.Response, error) {
 
 func SendHTTP3Request(domain string) (*http.Response, error) {
 	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS10}
-	client := &http.Client{Transport: &http3.RoundTripper{}, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: &http3.RoundTripper{}, Timeout: 5 * time.Second}
 	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
@@ -47,7 +47,7 @@ func SendHTTP3Request(domain string) (*http.Response, error) {
 func SendTLS10Request(domain string) (*http.Response, error) {
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS10, MaxVersion: tls.VersionTLS10}
 	//client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
-	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 5 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
 	request.Close = true
@@ -57,7 +57,7 @@ func SendTLS10Request(domain string) (*http.Response, error) {
 func SendTLS11Request(domain string) (*http.Response, error) {
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS11, MaxVersion: tls.VersionTLS11}
 	//client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
-	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 5 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
 	request.Close = true
@@ -67,7 +67,7 @@ func SendTLS11Request(domain string) (*http.Response, error) {
 func SendTLS12Request(domain string) (*http.Response, error) {
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12, MaxVersion: tls.VersionTLS12}
 	//client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
-	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 5 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
 	request.Close = true
@@ -76,7 +76,7 @@ func SendTLS12Request(domain string) (*http.Response, error) {
 func SendTLS13Request(domain string) (*http.Response, error) {
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
 	//client := &http.Client{Transport: &http2.Transport{}, Timeout: 10 * time.Second}
-	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
+	clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 5 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www."+domain, nil)
 	request.Close = true
@@ -85,7 +85,7 @@ func SendTLS13Request(domain string) (*http.Response, error) {
 
 func Sendcloudflareipv6() (*http.Response, error) {
 	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
 	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www.cloudflare.com/ips-v6", nil)
@@ -94,7 +94,7 @@ func Sendcloudflareipv6() (*http.Response, error) {
 }
 func Sendcloudflareipv4() (*http.Response, error) {
 	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
 	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://www.cloudflare.com/ips-v4", nil)
@@ -103,7 +103,7 @@ func Sendcloudflareipv4() (*http.Response, error) {
 }
 func Sendfastlyprobe() (*http.Response, error) {
 	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
 	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://api.fastly.com/public-ip-list", nil)
@@ -112,7 +112,7 @@ func Sendfastlyprobe() (*http.Response, error) {
 }
 func SendMaxCdnprobe() (*http.Response, error) {
 	//tlsConfig := &tls.Config{MinVersion: tls.VersionTLS13, MaxVersion: tls.VersionTLS13}
-	client := &http.Client{Transport: http.DefaultTransport, Timeout: 10 * time.Second}
+	client := &http.Client{Transport: http.DefaultTransport, Timeout: 5 * time.Second}
 	//clientele := &http.Client{Transport: &http.Transport{TLSClientConfig: tlsConfig}, Timeout: 10 * time.Second}
 	// TLS is required for public HTTP/2 services, so assume `https`.
 	request, _ := http.NewRequest("GET", "https://support.stackpath.com/hc/en-us/article_attachments/360096407372/ipblocks.txt", nil)

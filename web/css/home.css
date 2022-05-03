@@ -19,6 +19,14 @@ code {
 	font-family: 'Inconsolata', monospace;
 	padding: .2em .4em;
 }
+.form 
+{
+	display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  /* min-height: 100vh; */
+}
 
 .title {
     position: relative;
@@ -45,7 +53,12 @@ code {
 	margin: .5em 2em;
 	padding: 0;
 }
-
+input[type=text] {
+	background: transparent;
+    border: none;
+    border-bottom: 1px solid #FFFFFF;
+	color:white;
+  }
 #footer {
 	background-color: #246c;
 	background-image: linear-gradient(to bottom, transparent, #0009);

@@ -18,24 +18,27 @@
 		<span class="line"></span>
 	</nav>
     <div class = "title">	
-        <h1 style = "font-size:50px;" >The Internet Measurement Research Project</h1>
+        <h1 style = "font-size:50px; font-family: Helvetica; font-weight: 100;" >The Internet Measurement Research Project</h1>
 
     </div>
-	<div class="links">
+	<div class="form" style="margin-top: 50px;">
 		<!-- <input name="url"
 		   placeholder="https://example.com"
 		   pattern="https://.*" size="30"
 		   required> -->
 		   <form action="/singledomain" method="post">
-            website:<input type="text" name="website">
+            <input type="text" name="website" >
             <input type="submit" value="Enter">
         </form>
 		   
 	</div>
-	<h1>http1.0: {{.Http10}}</h1>
-	<h1>http1.1:{{.Http11}}</h1>
-	<h1>http1.2:{{.Http12}}</h1>
-	<h1>http1.3:{{.Http13}}</h1>
+	<div style="margin-top: 100px;">
+		<h1 class = "form">http1.0:{{.Http10}}</h1>
+		<h1 class = "form">http1.1:{{.Http11}}</h1>
+		<h1 class = "form">http1.2:{{.Http12}}</h1>
+		<h1 class = "form">http1.3:{{.Http13}}</h1>
+	</div>
+
 </header>
 
 </html>

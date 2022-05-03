@@ -94,9 +94,23 @@ func main() {
 
 	http.HandleFunc("/", ServeHTTP)
 	http.HandleFunc("/singledomain", singledomain)
+
 	http.HandleFunc("/about.html", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/about.html")
 	})
+	http.HandleFunc("/http.html", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/http.html")
+	})
+	http.HandleFunc("/prov.html", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/prov.html")
+	})
+	http.HandleFunc("/tls.html", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/tls.html")
+	})
+	http.HandleFunc("/dns.html", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/dns.html")
+	})
+
 	//http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(args.webDir))))
 
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./web/css"))))
