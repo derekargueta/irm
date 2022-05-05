@@ -46,7 +46,7 @@ type myvals struct {
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
-	t, err := template.ParseFiles("./web/index.html")
+	t, err := template.ParseFiles("./web/singledomain.html")
 	if err != nil {
 		fmt.Print("iuykfsduyfsdf")
 	}
@@ -57,7 +57,7 @@ func singledomain(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("method:", r.Method) //get request method
 	if r.Method == "GET" {
-		t, _ := template.ParseFiles("./web/index.html")
+		t, _ := template.ParseFiles("./web/singledomain.html")
 		t.Execute(w, nil)
 	} else {
 		r.ParseForm()
@@ -86,7 +86,7 @@ func singledomain(w http.ResponseWriter, r *http.Request) {
 			Tls12:  strconv.FormatBool(tls12.Supported),
 			Tls13:  strconv.FormatBool(tls13.Supported),
 		}
-		t, _ := template.ParseFiles("./web/index.html")
+		t, _ := template.ParseFiles("./web/singledomain.html")
 		t.Execute(w, test)
 		//	fmt.Println("website:", r.Form["website"])
 
@@ -127,6 +127,9 @@ func main() {
 	http.HandleFunc("/dns.html", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/dns.html")
 	})
+	// http.HandleFunc("/singledomain.html", func(w http.ResponseWriter, r *http.Request) {
+	// 	http.ServeFile(w, r, "./web/singledomain.html")
+	// })
 
 	//http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(args.webDir))))
 
