@@ -131,6 +131,7 @@ func main() {
 	//http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(args.webDir))))
 
 	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir("./web/css"))))
+	http.Handle("/scripts/", http.StripPrefix("/scripts/", http.FileServer(http.Dir("./web/scripts"))))
 
 	listenAddr := fmt.Sprintf(":%d", args.port)
 	log.Fatal(http.ListenAndServe("127.0.0.1"+listenAddr, nil))

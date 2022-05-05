@@ -3,48 +3,52 @@
 
 <head>
     <link rel="stylesheet" href="./css/home.css">
+    <link rel="stylesheet" href="./css/style.css">
 
 </head>
-
 <header id="header">
-	<nav class="links" style="--items: 6;">
+	<nav>
 		<a href="index.html">Home</a>
 		<a href="http.html">HTTP</a>
 		<a href="tls.html">TLS</a>
 		<a href="prov.html">Providers</a>
         <a href="dns.html">DNS</a>
+		<a href ="singledomain.html"> website</a>
 		<a href="about.html">About</a>
       
 		<span class="line"></span>
 	</nav>
-    <div class = "title">	
-        <h1 style = "font-size:50px; font-family: Helvetica; font-weight: 100;" >The Internet Measurement Research Project</h1>
+    <div style = "background-color:bisque">
+        <h1 class = "title" style = "font-size:50px; font-family: Helvetica; font-weight: 500;" >The Internet Measurement Research Project</h1>
+       	
+    </div>
+    <div>
+        <h1 style = "font-size:50px; font-family: Helvetica; font-weight: 500;" >Our Goal</h1>
+        <p class = "goal" style ="font-size:12px; font-family: Helvetica; font-weight: 100;">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Morbi tincidunt ornare massa eget egestas purus. Mattis rhoncus urna neque viverra. Orci porta non pulvinar neque. Enim facilisis gravida neque convallis a cras semper auctor neque. Scelerisque eleifend donec pretium vulputate sapien nec sagittis aliquam. Nisi est sit amet facilisis magna. Adipiscing diam donec adipiscing tristique. Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Nullam vehicula ipsum a arcu cursus. Hendrerit dolor magna eget est. Penatibus et magnis dis parturient montes nascetur. Volutpat sed cras ornare arcu dui vivamus arcu. Sit amet est placerat in egestas erat imperdiet sed. Pretium quam vulputate dignissim suspendisse in est ante in nibh. Ut sem nulla pharetra diam sit. Commodo sed egestas egestas fringilla phasellus faucibus. Pretium nibh ipsum consequat nisl vel.
+
+			<canvas class="charts_small" id="Chart1"></canvas>
+
+        </p>
+
 
     </div>
-	<div class="form" style="margin-top: 50px;">
-		<!-- <input name="url"
-		   placeholder="https://example.com"
-		   pattern="https://.*" size="30"
-		   required> -->
-		   <form action="/singledomain" method="post">
-            <input type="text" name="website" >
-            <input type="submit" value="Enter">
-        </form>
-		   
+	<div style="background-color:darkkhaki;">
+		<h1 style=" display: flex;
+		justify-content: center;
+		align-items: center;
+		text-align:left;" contact us></h1>
 	</div>
-	<div style="margin-top: 100px;">
-		<h1 class = "form">http1.0:{{.Http10}}</h1>
-		<h1 class = "form">http1.1:{{.Http11}}</h1>
-		<h1 class = "form">http1.2:{{.Http12}}</h1>
-		<h1 class = "form">http1.3:{{.Http13}}</h1>
-		<h1 class = "form">TLS1.0:{{.Tls10}}</h1>
-		<h1 class = "form">TLS1.1:{{.Tls11}}</h1>
-		<h1 class = "form">TLS1.2:{{.Tls12}}</h1>
-		<h1 class = "form">TLS1.3:{{.Tls13}}</h1>
-	</div>
+
+    
+    
+	
 
 </header>
 
 </html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js"></script>
+
+<script src="./scripts/http.js"></script>
+
 
 
