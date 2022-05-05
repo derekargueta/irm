@@ -36,6 +36,11 @@ type myvals struct {
 	Http11 string
 	Http12 string
 	Http13 string
+
+	Tls10 string
+	Tls11 string
+	Tls12 string
+	Tls13 string
 }
 
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +66,14 @@ func singledomain(w http.ResponseWriter, r *http.Request) {
 		http2Result := (&probes.HTTP2Probe{}).Run(r.Form.Get("website"))
 		http3Result := (&probes.HTTP3Probe{}).Run(r.Form.Get("website"))
 
+		tls10 := (&probes.TLS{}).Run(r.Form.Get("website"), 0)
+		tls11 := (&probes.TLS{}).Run(r.Form.Get("website"), 1)
+		tls12 := (&probes.TLS{}).Run(r.Form.Get("website"), 2)
+		tls13 := (&probes.TLS{}).Run(r.Form.Get("website"), 3)
+
+		// Cloudflare := (cdn_cloud).Run(r.Form.Get("website"))
+		// Fastly := (cdn_fast).Run(r.Form.Get("website"))
+
 		// logic part of log in
 
 		test := myvals{
@@ -68,6 +81,10 @@ func singledomain(w http.ResponseWriter, r *http.Request) {
 			Http11: strconv.FormatBool(http1Result.Supported),
 			Http12: strconv.FormatBool(http2Result.Supported),
 			Http13: strconv.FormatBool(http3Result.Supported),
+			Tls10:  strconv.FormatBool(tls10.Supported),
+			Tls11:  strconv.FormatBool(tls11.Supported),
+			Tls12:  strconv.FormatBool(tls12.Supported),
+			Tls13:  strconv.FormatBool(tls13.Supported),
 		}
 		t, _ := template.ParseFiles("./web/index.html")
 		t.Execute(w, test)
