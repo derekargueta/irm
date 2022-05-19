@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="./css/home.css">
+    <link rel="stylesheet" href="./css/style.css">
+
+</head>
+<header id="header">
+	<nav class="links" style="--items: 6;">
+		<a href="index.html">Home</a>
+		<a href="http.html">HTTP</a>
+		<a href="tls.html">TLS</a>
+		<a href="prov.html">Providers</a>
+        <a href="dns.html">DNS</a>
+        <a href ="singledomain.html"> tester</a>
+
+		<a href="about.html">About</a>
+      
+		<span class="line"></span>
+	</nav>
+    
+<div class="form" style="margin-top: 50px;">
+		   <form action="/singledomain" method="post">
+            <input type="text" name="website" >
+            <input type="submit" value="Enter">
+        </form>
+		   
+	</div>
+	<div style="margin-top: 100px;">
+		<h1 class = "form">http1.0:{{.Http10}}</h1>
+		<h1 class = "form">http1.1:{{.Http11}}</h1>
+		<h1 class = "form">http1.2:{{.Http12}}</h1>
+		<h1 class = "form">http1.3:{{.Http13}}</h1>
+		<h1 class = "form">TLS1.0:{{.Tls10}}</h1>
+		<h1 class = "form">TLS1.1:{{.Tls11}}</h1>
+		<h1 class = "form">TLS1.2:{{.Tls12}}</h1>
+		<h1 class = "form">TLS1.3:{{.Tls13}}</h1>
+	</div>
+</header>
+</html>
