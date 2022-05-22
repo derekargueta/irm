@@ -46,7 +46,7 @@ type myvals struct {
 func ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
-	t, err := template.ParseFiles("./web/singledomain.html")
+	t, err := template.ParseFiles("./web/index.html")
 	if err != nil {
 		fmt.Print("iuykfsduyfsdf")
 	}
@@ -127,9 +127,9 @@ func main() {
 	http.HandleFunc("/dns.html", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/dns.html")
 	})
-	// http.HandleFunc("/singledomain.html", func(w http.ResponseWriter, r *http.Request) {
-	// 	http.ServeFile(w, r, "./web/singledomain.html")
-	// })
+	//	http.HandleFunc("/singledomain.html", func(w http.ResponseWriter, r *http.Request) {
+	//		http.ServeFile(w, r, "./web/singledomain.html")
+	//})
 
 	//http.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(args.webDir))))
 
