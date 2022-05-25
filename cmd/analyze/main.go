@@ -10,6 +10,8 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
+	"syscall"
 
 	// "net/http"
 	"os"
@@ -18,11 +20,13 @@ import (
 
 	"github.com/derekargueta/irm/pkg/irm"
 	"github.com/derekargueta/irm/pkg/irm/probes"
-
 	"github.com/derekargueta/irm/pkg/util"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"golang.org/x/term"
+	gomail "gopkg.in/mail.v2"
 )
 
 type ProbeResult struct {
@@ -367,6 +371,17 @@ func myMaxcdn() *probes.MaxCDN {
 	fmt.Println("run maxcdn")
 	return &max
 }
+func credentials() (string, error) {
+
+	fmt.Print("Enter Password: ")
+	bytePassword, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return "", err
+	}
+
+	password := string(bytePassword)
+	return strings.TrimSpace(password), nil
+}
 func main() {
 	// Try to minimize filesystem usage and avoid lingering connections.
 	http.DefaultTransport.(*http.Transport).DisableKeepAlives = true
@@ -377,14 +392,45 @@ func main() {
 	var timebetrun int
 	var enableGit int
 	var singleDomain string
+	titles := []string{
+		"time stamp",
+		"Domain tested",
+		"percent http10",
+		"percent http2",
+		"percent http1.1",
+		"percent http3",
+		"percent connection error",
+		"time elapsed",
+		"tls1.0 enabled",
+		"tls1.1 enabled",
+		"tls1.2 enabled",
+		"tls1.3 enabled",
+		"cloudflare",
+		"cloudflare ipv4",
+		"cloudflare ipv6",
+		"fastlyprobe",
+		"fastlyprobe ipv4",
+		"fastlyprobe ipv6",
+		"Stackpath enabled",
+		"dualstack",
+		"total ipv4",
+		"total ipv6",
+		"dns_any enabled",
+		"Digicert Certificate Usage",
+		"Comodo Certificate Usage",
+		"Let's Encrypt Usage",
+	}
 	flag.StringVar(&filepath, "f", "", "file path")
 	flag.StringVar(&filepathexport, "o", "", "export to csv")
 	flag.IntVar(&numWorkers, "w", runtime.NumCPU()*2, "number of workers")
-	flag.IntVar(&timebetrun, "d", 6, "time between runs")
+	flag.IntVar(&timebetrun, "d", 24, "time between runs")
 	flag.IntVar(&enableGit, "git", 0, "enable (1) git or disable (0)")
 	flag.StringVar(&singleDomain, "url", "", "test single domain")
 	flag.Parse()
-
+	pass, err := credentials()
+	if err != nil {
+		fmt.Println(err)
+	}
 	cdn_fast := myfast()
 	cdn_cloud := mycloud()
 	cdn_max := myMaxcdn()
@@ -528,6 +574,32 @@ func main() {
 				})
 				log.Printf("errors that happened: %s", mrr)
 				log.Printf("sleeping for %d seconds\b", timebetrun)
+
+				m := gomail.NewMessage()
+
+				m.SetHeader("From", "IRMResearch@outlook.com")
+
+				m.SetHeader("To", "tavovnt@gmail.com")
+
+				m.SetHeader("Subject", time.Now().Format("01-02-2006")+" Daily IRM Report")
+				output := ""
+				c := 0
+				for _, value := range data[0] {
+					output += titles[c] + " : " + value + "\n"
+					c += 1
+				}
+				m.SetBody("text/plain", "Here's today's results of IRM :) \n \n"+output)
+
+				if err != nil {
+					fmt.Println(err)
+				}
+				d := gomail.NewDialer("smtp.outlook.com", 587, "IRMResearch@outlook.com", string(pass))
+
+				if err := d.DialAndSend(m); err != nil {
+					fmt.Println(err)
+					panic(err)
+				}
+
 				time.Sleep(time.Duration(timebetrun) * time.Hour)
 			}
 		} else {
